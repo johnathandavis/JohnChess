@@ -31,9 +31,17 @@ namespace JohnChess.Tests.Pieces
             var rookAtB2Board = CreateBoardWithWhiteRookAt(b2);
             var moves = rookAtB2Board.GetPossibleMoves(PieceColor.White);
 
+            // Rook has 14 possible moves at B2 with no obstacles
             Assert.Equal(moves.Count, 14);
 
+            // Gather all the normal moves (should be all of them, rooks can't
+            // do en passant, aren't considered the initiating move for castling,
+            // and can't promote.
             var normalMoves = (from m in moves select m.NormalPieceMove).ToList();
+
+            // All moves should be normal!
+            Assert.Equal(moves.Count, normalMoves.Count);
+
             foreach (var m in normalMoves)
             {
                 // All moves should be normal moves

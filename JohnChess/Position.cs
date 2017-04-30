@@ -35,5 +35,19 @@ namespace JohnChess
             // F5 (File first, then Rank)
             return File.ToString() + ((int)Rank).ToString();
         }
+
+        public static bool IsOnBoard(Position position)
+        {
+            return IsOnBoard(position.Rank, position.File);
+        }
+        public static bool IsOnBoard(Rank r, File f)
+        {
+            return IsOnBoard((int)r, (int)f);
+        }
+        public static bool IsOnBoard(int r, int f)
+        {
+            return (r >= 1 && r <= 8) &&
+                (f >= 1 && f <= 8);
+        }
     }
 }
