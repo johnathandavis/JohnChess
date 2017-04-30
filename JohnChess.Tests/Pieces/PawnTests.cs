@@ -34,6 +34,9 @@ namespace JohnChess.Tests.Pieces
             // This pawn can go C3 and C4
             Assert.Contains(new Position(File.C, Rank._3), wPawnC2Positions);
             Assert.Contains(new Position(File.C, Rank._4), wPawnC2Positions);
+
+            var takesMoves = (from m in wPawnC2NormalMoves where m.PieceCaptured select m).ToList();
+            Assert.Equal(takesMoves.Count, 0);
         }
 
         [Fact]
@@ -49,6 +52,9 @@ namespace JohnChess.Tests.Pieces
             // This pawn can only go C4
             var onlyMove = wPawnC3Positions[0];
             Assert.Equal(new Position(File.C, Rank._4), onlyMove);
+
+            var takesMoves = (from m in wPawnC3NormalMoves where m.PieceCaptured select m).ToList();
+            Assert.Equal(takesMoves.Count, 0);
         }
 
         [Fact]
@@ -64,6 +70,9 @@ namespace JohnChess.Tests.Pieces
             // This pawn can go C3 and C4
             Assert.Contains(new Position(File.C, Rank._6), bPawnC7Positions);
             Assert.Contains(new Position(File.C, Rank._5), bPawnC7Positions);
+
+            var takesMoves = (from m in bPawnC7NormalMoves where m.PieceCaptured select m).ToList();
+            Assert.Equal(takesMoves.Count, 0);
         }
 
         [Fact]
@@ -79,6 +88,35 @@ namespace JohnChess.Tests.Pieces
             // This pawn can only go C5
             var onlyMove = bPawnC6Positions[0];
             Assert.Equal(new Position(File.C, Rank._5), onlyMove);
+
+            var takesMoves = (from m in bPawnC6NormalMoves where m.PieceCaptured select m).ToList();
+            Assert.Equal(takesMoves.Count, 0);
+        }
+
+        [Fact]
+        public void HasCorrectCaptureMoves()
+        {
+            var pawnC2Board = CreateBoardWithPawnAt(PieceColor.White, new Position(File.C, Rank._2));
+            var enemyPawnPos1 = new Position(File.B, Rank._3);
+            var enemyPawnPos2 = new Position(File.D, Rank._3);
+            pawnC2Board.AddPiece(new PieceBuilder(PieceType.Pawn)
+                .As(PieceColor.Black)
+                .At(enemyPawnPos1)
+                .Create());
+            pawnC2Board.AddPiece(new PieceBuilder(PieceType.Pawn)
+                .As(PieceColor.Black)
+                .At(enemyPawnPos2)
+                .Create());
+
+            var moves = pawnC2Board.GetPossibleMoves(PieceColor.White);
+            var normalMoves = (from m in moves where m.Type == MoveType.NormalPiece select m).ToList();
+            Assert.Equal(moves.Count, normalMoves.Count);
+
+            var takesMoves = (from m in normalMoves where m.PieceCaptured select m.NormalPieceMove).ToList();
+            var takesMovesPositions = (from m in takesMoves select m.NewPosition).ToList();
+            Assert.Equal(takesMovesPositions.Count, 2);
+            Assert.Contains(new Position(File.B, Rank._3), takesMovesPositions);
+            Assert.Contains(new Position(File.D, Rank._3), takesMovesPositions);
         }
     }
 }
