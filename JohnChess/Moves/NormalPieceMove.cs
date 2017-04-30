@@ -8,22 +8,24 @@ namespace JohnChess.Moves
 {
     public class NormalPieceMove
     {
-        public NormalPieceMove(ChessPiece piece, Position newPosition)
+        public NormalPieceMove(ChessPiece piece, Position newPosition, bool takes)
         {
             Piece = piece;
             NewPosition = newPosition;
             OldPosition = piece.Position;
+            PieceCaptured = takes;
         }
 
         public ChessPiece Piece { get; }
         public Position NewPosition { get; }
         public Position OldPosition { get; }
+        public bool PieceCaptured { get; }
 
-        public string ToString(bool pieceCaptured)
+        public override string ToString()
         {
             return OldPosition.ToString() +
                 Piece.Type.ToNotationLetter() + " " +
-                (pieceCaptured ? "x " : "") +
+                (PieceCaptured ? "x " : "") +
                 NewPosition.ToString();
         }
     }

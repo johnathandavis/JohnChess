@@ -34,8 +34,27 @@ namespace JohnChess.Moves
         public CastleMove Castle { get; }
         public EnPassantMove EnPassant { get; }
         public PromotionMove Promotion { get; }
-        // Only set after move evaluated by board object!
-        public bool PieceCaptured { get; set; }
+        public bool PieceCaptured
+        {
+            get
+            {
+                switch (Type)
+                {
+                    // Definition of En Passant means a piece was captured
+                    case MoveType.EnPassant:
+                        return true;
+                    // Definition of Castle means no piece was captured    
+                    case MoveType.Castle:
+                        return false;
+                    case MoveType.NormalPiece:
+                        return NormalPieceMove.PieceCaptured;
+                    case MoveType.Promotion:
+                        return Promotion.PieceCaptured;
+                    default:
+                        throw new AlienChessException();
+                }
+            }
+        }
 
         public override string ToString()
         {
@@ -46,11 +65,11 @@ namespace JohnChess.Moves
                 case MoveType.EnPassant:
                     return EnPassant.ToString();
                 case MoveType.NormalPiece:
-                    return NormalPieceMove.ToString(PieceCaptured);
+                    return NormalPieceMove.ToString();
                 case MoveType.Promotion:
-                    return Promotion.ToString(PieceCaptured);
+                    return Promotion.ToString();
                 default:
-                    throw new Exception("Alien Chess Error");
+                    throw new AlienChessException();
             }
         }
         

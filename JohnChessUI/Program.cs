@@ -39,7 +39,8 @@ namespace JohnChessUI
 
         private static void DrawBoard(Board board)
         {
-            var ranks = (Rank[])Enum.GetValues(typeof(Rank));
+            var reversedRanks = (Rank[])Enum.GetValues(typeof(Rank));
+            var ranks = reversedRanks.Reverse().ToArray();
             var files = (File[])Enum.GetValues(typeof(File));
 
             // Two spaces for File label and an extra

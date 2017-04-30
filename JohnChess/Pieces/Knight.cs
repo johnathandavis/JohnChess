@@ -21,10 +21,13 @@ namespace JohnChess.Pieces
                 if (Math.Abs(x) == Math.Abs(y)) continue;
 
                 moves.AddMoveIfValid(() =>
-                    MoveBuilder.CreateNormalMove(this, this.Position
+                {
+                    var newPos = this.Position
                         .MoveHoriz(x)
-                        .MoveVert(y))
-                );
+                        .MoveVert(y);
+                    bool enemyOccupied = (board[newPos]?.Color.Opposite() == this.Color);
+                    return MoveBuilder.CreateNormalMove(this, newPos, enemyOccupied);
+                });
             }
 
             return moves;

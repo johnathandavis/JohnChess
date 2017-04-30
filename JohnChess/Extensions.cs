@@ -59,5 +59,9 @@ namespace JohnChess
             }
             catch { }
         }
+        public static PieceColor Opposite(this PieceColor color)
+        {
+            return color == PieceColor.White ? PieceColor.Black : PieceColor.White;
+        }
     }
 }

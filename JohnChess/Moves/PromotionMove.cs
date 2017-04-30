@@ -8,14 +8,16 @@ namespace JohnChess.Moves
 {
     public class PromotionMove
     {
-        public PromotionMove(Pawn promotingPiece, PromotingPieceType newPieceType)
+        public PromotionMove(Pawn promotingPiece, PromotingPieceType newPieceType, bool takes)
         {
             PromotingPiece = promotingPiece;
             NewPieceType = newPieceType;
+            PieceCaptured = takes;
         }
 
         public Pawn PromotingPiece { get; }
         public PromotingPieceType NewPieceType { get; }
+        public bool PieceCaptured { get; }
 
         public string ToString(bool pieceCaptured)
         {

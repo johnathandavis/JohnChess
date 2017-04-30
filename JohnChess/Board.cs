@@ -135,7 +135,6 @@ namespace JohnChess
             var existingPiece = newBoard[normalMove.NewPosition];
             if (existingPiece != null)
             {
-                move.PieceCaptured = true;
                 if (existingPiece.Color == PieceColor.Black)
                     newBoard.blackPieces.Remove(existingPiece);
                 else newBoard.whitePieces.Remove(existingPiece);

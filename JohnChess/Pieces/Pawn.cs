@@ -36,7 +36,7 @@ namespace JohnChess.Pieces
             var singleMovePos = Position.MoveVert(IncrementDirection);
             if (board[singleMovePos] == null)
             {
-                moves.Add(MoveBuilder.CreateNormalMove(this, singleMovePos));
+                moves.Add(MoveBuilder.CreateNormalMove(this, singleMovePos, false));
             }
             else
             {
@@ -48,7 +48,7 @@ namespace JohnChess.Pieces
                 var moveTwoPos = Position.MoveVert(IncrementDirection * 2);
                 if (board[moveTwoPos] == null)
                 {
-                    moves.Add(MoveBuilder.CreateNormalMove(this, moveTwoPos));
+                    moves.Add(MoveBuilder.CreateNormalMove(this, moveTwoPos, false));
                 }
             }
             
@@ -65,7 +65,7 @@ namespace JohnChess.Pieces
                     .MoveVert(IncrementDirection)
                     .MoveHoriz(-1);
                 if (IsPositionEnemyOccupied(board, leftDiagPosition))
-                    capturingMoves.Add(MoveBuilder.CreateNormalMove(this, leftDiagPosition));
+                    capturingMoves.Add(MoveBuilder.CreateNormalMove(this, leftDiagPosition, true));
             }
             if (Position.File != File.H)
             {
@@ -73,7 +73,7 @@ namespace JohnChess.Pieces
                     .MoveVert(IncrementDirection)
                     .MoveHoriz(1);
                 if (IsPositionEnemyOccupied(board, rightDiagPosition))
-                    capturingMoves.Add(MoveBuilder.CreateNormalMove(this, rightDiagPosition));
+                    capturingMoves.Add(MoveBuilder.CreateNormalMove(this, rightDiagPosition, true));
             }
 
             return capturingMoves;

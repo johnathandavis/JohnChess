@@ -69,9 +69,7 @@ namespace JohnChess.Tests.Pieces
             var rookMoves = (from m in moves where m.Type == MoveType.NormalPiece &&
                              m.NormalPieceMove.Piece.Color == PieceColor.White &&
                              m.NormalPieceMove.Piece.Type == PieceType.Rook select m).ToList();
-
-            bool foundTakesMove = false;
-
+            
             foreach (var m in rookMoves)
             {
                 var newPos = m.NormalPieceMove.NewPosition;
@@ -89,13 +87,14 @@ namespace JohnChess.Tests.Pieces
                 // rook isn't moving past an enemy piece (but can take here)
                 if (newPos.Rank == enemyPosition.Rank)
                 {
-                    if ((int)newPos.File == (int)enemyPosition.File) foundTakesMove = true;
-                    Assert.True((int)newPos.File < (int)enemyPosition.File || foundTakesMove);
+                    Assert.True((int)newPos.File <= (int)enemyPosition.File);
                 }
             }
 
-            // Make sure it includes the "takes" option
-            Assert.True(foundTakesMove);
+            var takesMoves = (from m in rookMoves where m.PieceCaptured select m.NormalPieceMove).ToList();
+            Assert.Equal(takesMoves.Count, 1);
+            var takeMove = takesMoves[0];
+            Assert.Equal(takeMove.NewPosition, enemyPosition);
         }
     }
 }

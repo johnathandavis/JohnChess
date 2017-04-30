@@ -41,11 +41,11 @@ namespace JohnChess.Pieces
                     if (newPosPiece.Color != this.Color)
                     {
                         // Its not null, but its capturable
-                        moves.Add(MoveBuilder.CreateNormalMove(this, newPos));
+                        moves.Add(MoveBuilder.CreateNormalMove(this, newPos, true));
                     }
                     break;
                 }
-                moves.Add(MoveBuilder.CreateNormalMove(this, newPos));
+                moves.Add(MoveBuilder.CreateNormalMove(this, newPos, false));
             }
 
             return moves;

@@ -8,9 +8,9 @@ namespace JohnChess.Moves
 {
     public class MoveBuilder
     {
-        public static Move CreateNormalMove(ChessPiece piece, Position newPosition)
+        public static Move CreateNormalMove(ChessPiece piece, Position newPosition, bool takes)
         {
-            var move = new NormalPieceMove(piece, newPosition);
+            var move = new NormalPieceMove(piece, newPosition, takes);
             return new Move(move);
         }
     }
