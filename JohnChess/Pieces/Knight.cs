@@ -16,18 +16,15 @@ namespace JohnChess.Pieces
             var moves = new List<Move>();
             int[] indices = new int[] { -2, -1, 1, 2 };
             foreach (int x in indices)
-            foreach (int y in indices)
             {
-                if (Math.Abs(x) == Math.Abs(y)) continue;
-
-                moves.AddMoveIfValid(() =>
+                foreach (int y in indices)
                 {
-                    var newPos = this.Position
-                        .MoveHoriz(x)
-                        .MoveVert(y);
+                    if (Math.Abs(x) == Math.Abs(y)) continue;
+                    if (!Position.IsOnBoard((int)Position.Rank + y, (int)Position.File + x)) continue;
+                    var newPos = Position.MoveHoriz(x).MoveVert(y);
                     bool enemyOccupied = (board[newPos]?.Color.Opposite() == this.Color);
-                    return MoveBuilder.CreateNormalMove(this, newPos, enemyOccupied);
-                });
+                    moves.Add(MoveBuilder.CreateNormalMove(this, newPos, enemyOccupied));
+                }
             }
 
             return moves;

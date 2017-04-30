@@ -50,15 +50,6 @@ namespace JohnChess
                     throw new Exception("Alien Chess Error");
             }
         }
-        public static void AddMoveIfValid(this List<Moves.Move> ls, Func<Moves.Move> moveFunction)
-        {
-            try
-            {
-                var move = moveFunction();
-                ls.Add(move);
-            }
-            catch { }
-        }
         public static PieceColor Opposite(this PieceColor color)
         {
             return color == PieceColor.White ? PieceColor.Black : PieceColor.White;
