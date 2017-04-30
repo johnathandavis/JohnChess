@@ -8,6 +8,10 @@ namespace JohnChess
 {
     public partial class Board
     {
+        public static Board NewEmptyBoard()
+        {
+            return new Board();
+        }
         public static Board NewStandardBoard()
         {
             var board = new Board();

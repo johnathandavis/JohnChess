@@ -79,7 +79,7 @@ namespace JohnChess
             }
         }
 
-        private void AddPiece(ChessPiece piece)
+        internal void AddPiece(ChessPiece piece)
         {
             this[piece.Position] = piece;
             if (piece.Color == PieceColor.Black) blackPieces.Add(piece);
