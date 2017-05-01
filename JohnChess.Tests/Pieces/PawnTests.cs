@@ -118,5 +118,59 @@ namespace JohnChess.Tests.Pieces
             Assert.Contains(new Position(File.B, Rank._3), takesMovesPositions);
             Assert.Contains(new Position(File.D, Rank._3), takesMovesPositions);
         }
+
+        [Fact]
+        public void PromotionsAvailableStraightAhead()
+        {
+            var pawnD7Board = CreateBoardWithPawnAt(PieceColor.White, new Position(File.D, Rank._7));
+            var moves = pawnD7Board.GetPossibleMoves(PieceColor.White);
+
+            // There should be 4 moves - one for each promoting
+            // piece type for pD7 promotes on D8
+            Assert.Equal(moves.Count, 4);
+            var promotingMoves = (from m in moves
+                                  where m.Type == MoveType.Promotion
+                                  select m.Promotion).ToList();
+            var promotingTypes = (from m in promotingMoves select m.NewPieceType).ToList();
+            Assert.Equal(moves.Count, promotingMoves.Count);
+
+            foreach (var promotingPieceType in PromotionMove.PromotingPieceType.PromotingPieceTypes)
+            {
+                Assert.Contains(promotingPieceType, promotingTypes);
+            }
+        }
+
+        [Fact]
+        public void PawnDoesntMoveToLastRankWithoutPromoting()
+        {
+            var pawnC7Board = CreateBoardWithPawnAt(PieceColor.White, new Position(File.C, Rank._7));
+
+            var enemyKnight1Pos = new Position(File.B, Rank._8);
+            var enemyKnight2Pos = new Position(File.D, Rank._8);
+
+            pawnC7Board.AddPiece(new PieceBuilder(PieceType.Knight)
+                .As(PieceColor.Black)
+                .At(enemyKnight1Pos)
+                .Create());
+
+            pawnC7Board.AddPiece(new PieceBuilder(PieceType.Knight)
+                .As(PieceColor.Black)
+                .At(enemyKnight2Pos)
+                .Create());
+
+            var moves = pawnC7Board.GetPossibleMoves(PieceColor.White);
+            // Pawn can take on B7 or D8, or advance to C8. All are promotions,
+            // and there should be four moves per (for the four different promoting
+            // piece types), so 12 total.
+            Assert.Equal(moves.Count, 12);
+            var promotingMoves = (from m in moves
+                                  where m.Type == MoveType.Promotion
+                                  select m.Promotion).ToList();
+            // All moves must be promotions, a pawn can't reach the last rank
+            // without promoting
+            Assert.Equal(promotingMoves.Count, moves.Count);
+
+
+        }
     }
 }
