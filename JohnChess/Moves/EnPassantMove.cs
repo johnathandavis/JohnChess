@@ -8,6 +8,13 @@ namespace JohnChess.Moves
 {
     public class EnPassantMove
     {
+        public EnPassantMove(Pawn attackingPawn, Position capturePos, Position destPos)
+        {
+            AttackingPawn = attackingPawn;
+            CapturePosition = capturePos;
+            DestinationPosition = destPos;
+        }
+
         public Pawn AttackingPawn { get; set; }
         public Position CapturePosition { get; set; }
         public Position DestinationPosition { get; set; }

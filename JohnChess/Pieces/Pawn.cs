@@ -105,17 +105,43 @@ namespace JohnChess.Pieces
             if (Color == PieceColor.Black && Position.Rank != Rank._4) return new List<Move>();
             if (Color == PieceColor.White && Position.Rank != Rank._5) return new List<Move>();
 
-            if (Position.File != File.A)
+            // Create a few KVP of Key = new position and value = piece to capture position
+            var positions = new List<KeyValuePair<Position, Position>>();
+            if ((int)Position.File >= (int)File.B)
             {
-                var capturePosition = Position
-                    .MoveVert(IncrementDirection)
-                    .MoveHoriz(-1);
-                var enemyPosition = Position
-                    .MoveHoriz(-1);
-                if (!IsPositionEnemyOccupied(board, enemyPosition)) return new List<Move>();
-                //enPassantMoves.Add(MoveBuilder.CreateNormalMove(this, leftDiagPosition));
+                positions.Add(
+                    new KeyValuePair<Position, Position>(
+                        Position.MoveVert(IncrementDirection).MoveHoriz(-1),
+                        Position.MoveHoriz(-1)));
             }
+            if ((int)Position.File <= (int)File.G)
+            {
+                positions.Add(
+                    new KeyValuePair<Position, Position>(
+                        Position.MoveVert(IncrementDirection).MoveHoriz(1),
+                        Position.MoveHoriz(1)));
+            }
+            foreach (var kvp in positions)
+            {
+                var newPos = kvp.Key;
+                var capturePos = kvp.Value;
+                
+                // There has to be an enemy piece there
+                var pieceToCapture = board[capturePos];
+                if (pieceToCapture == null ||
+                    pieceToCapture.Color == this.Color) continue;
 
+                // The piece must have made a pawn advances 2 move.
+                if (pieceToCapture.MoveHistory == null ||
+                    pieceToCapture.MoveHistory.Count != 1) continue;
+
+                // The move must be the most recently played move in the game.
+                var pieceToCaptureLastMove = pieceToCapture.MoveHistory.Last();
+                if (pieceToCaptureLastMove != board.LastMove) continue;
+
+                // We have a candidate for en passant!
+                enPassantMoves.Add(MoveBuilder.CreateEnPassantMove(this, newPos, capturePos));
+            }
 
             return enPassantMoves;
         }

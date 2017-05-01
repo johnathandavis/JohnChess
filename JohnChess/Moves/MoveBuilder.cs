@@ -24,5 +24,10 @@ namespace JohnChess.Moves
             }
             return moves;
         }
+        public static Move CreateEnPassantMove(Pawn pawn, Position newPosition, Position capturePosition)
+        {
+            var enPassant = new EnPassantMove(pawn, capturePosition, newPosition);
+            return new Move(enPassant);
+        }
     }
 }

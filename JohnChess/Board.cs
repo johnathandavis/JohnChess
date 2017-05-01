@@ -85,6 +85,14 @@ namespace JohnChess
             if (piece.Color == PieceColor.Black) blackPieces.Add(piece);
             if (piece.Color == PieceColor.White) whitePieces.Add(piece);
         }
+        internal IReadOnlyList<ChessPiece> BlackPieces
+        {
+            get { return blackPieces; }
+        }
+        internal IReadOnlyList<ChessPiece> WhitePieces
+        {
+            get { return whitePieces; }
+        }
 
 
         public List<Move> GetPossibleMoves(PieceColor color)
@@ -114,24 +122,31 @@ namespace JohnChess
             var newPosPiece = this[newPos];
             return newPosPiece == null || newPosPiece.Color != move.Piece.Color;
         }
-
-
-
+        
         public Board PerformMove(Move move)
         {
+            var newBoard = new Board(moveHistory, pieces, whitePieces, blackPieces);
+            newBoard.moveHistory.Add(move);
+
             switch (move.Type)
             {
                 case MoveType.NormalPiece:
-                    return PerformNormalPieceMove(move);
+                    PerformNormalPieceMove(newBoard, move);
+                    break;
+                case MoveType.Promotion:
+                    PerformPromotionPieceMove(newBoard, move);
+                    break;
+                case MoveType.EnPassant:
+                    PerformEnPassantPieceMove(newBoard, move);
+                    break;
                 default:
-                    return this;
+                    throw new AlienChessException("Unknown move type!");
             }
+            return newBoard;
         }
-        private Board PerformNormalPieceMove(Move move)
+        private void PerformNormalPieceMove(Board newBoard, Move move)
         {
             var normalMove = move.NormalPieceMove;
-            var newBoard = new Board(moveHistory, pieces, whitePieces, blackPieces);
-            newBoard.moveHistory.Add(move);
             var existingPiece = newBoard[normalMove.NewPosition];
             if (existingPiece != null)
             {
@@ -143,7 +158,50 @@ namespace JohnChess
             newBoard[normalMove.Piece.Position] = null;
             newBoard[normalMove.NewPosition] = normalMove.Piece;
             normalMove.Piece.Position = normalMove.NewPosition;
-            return newBoard;
+        }
+        private void PerformPromotionPieceMove(Board newBoard, Move move)
+        {
+            var promotion = move.Promotion;
+            var existingPiece = newBoard[promotion.NewPosition];
+            if (existingPiece != null)
+            {
+                if (existingPiece.Color == PieceColor.Black)
+                    newBoard.blackPieces.Remove(existingPiece);
+                else newBoard.whitePieces.Remove(existingPiece);
+            }
+
+            var pieceHistory = new List<Move>(promotion.PromotingPiece.MoveHistory);
+            if (promotion.PromotingPiece.Color == PieceColor.White)
+                newBoard.whitePieces.Remove(promotion.PromotingPiece);
+            else
+                newBoard.blackPieces.Remove(promotion.PromotingPiece);
+
+            var newPiece = new PieceBuilder(promotion.NewPieceType.Type)
+                .As(promotion.PromotingPiece.Color)
+                .At(promotion.NewPosition)
+                .Create();
+            newPiece.MoveHistory.AddRange(pieceHistory);
+            newPiece.MoveHistory.Add(move);
+
+            newBoard.AddPiece(newPiece);
+            newBoard[promotion.OldPosition] = null;
+            promotion.PromotingPiece.Position = promotion.NewPosition;
+        }
+        private void PerformEnPassantPieceMove(Board newBoard, Move move)
+        {
+            var enPassant = move.EnPassant;
+            var existingPiece = newBoard[enPassant.CapturePosition];
+            if (existingPiece != null)
+            {
+                if (existingPiece.Color == PieceColor.Black)
+                    newBoard.blackPieces.Remove(existingPiece);
+                else newBoard.whitePieces.Remove(existingPiece);
+            }
+            enPassant.AttackingPawn.MoveHistory.Add(move);
+            newBoard[enPassant.AttackingPawn.Position] = null;
+            newBoard[enPassant.CapturePosition] = null;
+            newBoard[enPassant.DestinationPosition] = enPassant.AttackingPawn;
+            enPassant.AttackingPawn.Position = enPassant.DestinationPosition;
         }
     }
 }

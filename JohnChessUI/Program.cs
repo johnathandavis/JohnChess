@@ -168,7 +168,7 @@ namespace JohnChessUI
             {
                 Console.CursorLeft = leftMargin;
                 Console.CursorTop = rowNumber;
-                Console.Write(startNumber.ToString() + ":  " + move);
+                Console.Write(startNumber.ToString() + ":  " + move + "          ");
                 startNumber++;
                 rowNumber++;
             }

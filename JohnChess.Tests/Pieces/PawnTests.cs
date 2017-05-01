@@ -169,8 +169,87 @@ namespace JohnChess.Tests.Pieces
             // All moves must be promotions, a pawn can't reach the last rank
             // without promoting
             Assert.Equal(promotingMoves.Count, moves.Count);
+        }
 
+        [Fact]
+        public void PawnPromotionPerformedSuccessfully()
+        {
+            var pawnD7Board = CreateBoardWithPawnAt(PieceColor.White, new Position(File.D, Rank._7));
+            var moves = pawnD7Board.GetPossibleMoves(PieceColor.White);
+            var promotingMoves = (from m in moves
+                                  where m.Type == MoveType.Promotion
+                                  select m).ToList();
+            var promotion = promotingMoves[0];
+            pawnD7Board = pawnD7Board.PerformMove(promotion);
 
+            Assert.Equal(pawnD7Board.WhitePieces.Count, 1);
+            var whitePiece = pawnD7Board.WhitePieces[0];
+            Assert.Equal(whitePiece.Type, promotion.Promotion.NewPieceType.Type);
+            Assert.Equal(whitePiece.MoveHistory.Count, promotion.Promotion.PromotingPiece.MoveHistory.Count + 1);
+            Assert.Equal(pawnD7Board[File.D, Rank._8], whitePiece);
+        }
+
+        [Fact]
+        public void PawnSeesEnPassant()
+        {
+            var pawnD5Board = CreateEnPassantBoardSetup();
+
+            var whitePawnResponses = pawnD5Board.GetPossibleMoves(PieceColor.White);
+            var enPassantMoves = (from m in whitePawnResponses
+                                  where m.Type == MoveType.EnPassant
+                                  select m.EnPassant).ToList();
+            Assert.Equal(enPassantMoves.Count, 1);
+            var enPassantMove = enPassantMoves[0];
+            Assert.Equal(enPassantMove.DestinationPosition, new Position(File.C, Rank._6));
+            Assert.Equal(enPassantMove.CapturePosition, new Position(File.C, Rank._5));
+        }
+
+        [Fact]
+        public void PawnCantEnPassantWhenAdvanceWasntLatestMove()
+        {
+            var pawnD5Board = CreateEnPassantBoardSetup();
+            var blackPiece = pawnD5Board.LastMove.NormalPieceMove.Piece;
+            blackPiece.MoveHistory.Clear();
+
+            var whitePawnResponses = pawnD5Board.GetPossibleMoves(PieceColor.White);
+            var enPassantMoves = (from m in whitePawnResponses
+                                  where m.Type == MoveType.EnPassant
+                                  select m.EnPassant).ToList();
+            Assert.Equal(enPassantMoves.Count, 0);
+        }
+        
+        [Fact]
+        public void PawnEnPassantPerformedSuccessfully()
+        {
+            var enPassantBoard = CreateEnPassantBoardSetup();
+            var moves = enPassantBoard.GetPossibleMoves(PieceColor.White);
+            var enPassantMove = (from m in moves
+                                 where m.Type == MoveType.EnPassant
+                                 select m).First();
+            enPassantBoard = enPassantBoard.PerformMove(enPassantMove);
+
+            var whitePieces = enPassantBoard.WhitePieces;
+            Assert.Equal(whitePieces.Count, 1);
+            var wp = whitePieces[0];
+            Assert.Equal(wp.Position, new Position(File.C, Rank._6));
+        }
+
+        private Board CreateEnPassantBoardSetup()
+        {
+            var pawnD5Board = CreateBoardWithPawnAt(PieceColor.White, new Position(File.D, Rank._5));
+            var enemyPawnPosition = new Position(File.C, Rank._7);
+            pawnD5Board.AddPiece(new PieceBuilder(PieceType.Pawn)
+                .As(PieceColor.Black)
+                .At(enemyPawnPosition)
+                .Create());
+
+            var blackMoves = pawnD5Board.GetPossibleMoves(PieceColor.Black);
+            var blackPawnAdvance2Move = (from m in blackMoves
+                                         where m.Type == MoveType.NormalPiece &&
+                                         m.NormalPieceMove.NewPosition.Equals(new Position(File.C, Rank._5))
+                                         select m).First();
+
+            return pawnD5Board.PerformMove(blackPawnAdvance2Move);
         }
     }
 }
