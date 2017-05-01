@@ -7,16 +7,16 @@ using JohnChess.Pieces;
 
 namespace JohnChess.AI.JohnJohn
 {
-    public class JohnJohnPlayer : IPlayer
+    public class JohnJohnPlayer : AbstractPlayer<ReinfeldPointsEvaluator>
     {
-        private readonly JohnsBestGuessScorer scorer;
+        private readonly Random rnd;
         
         public JohnJohnPlayer()
         {
-            scorer = new JohnsBestGuessScorer();
+            rnd = new Random();
         }
 
-        public Move SelectMove(Board board, PieceColor color)
+        public override Move SelectMove(Board board, PieceColor color)
         {
             var allMoves = board.GetPossibleMoves(color);
             var moveDict = allMoves.ToDictionary(
@@ -26,7 +26,15 @@ namespace JohnChess.AI.JohnJohn
                                    orderby kvp.Value descending
                                    select kvp).ToList();
 
-            return sortedescending.First().Key;
+            var topValue = sortedescending.First().Value;
+            var candidates = new List<Move>();
+            foreach (var move in sortedescending)
+            {
+                if (move.Value == topValue) candidates.Add(move.Key);
+                else break;
+            }
+
+            return candidates[rnd.Next(0, candidates.Count)];
         }
 
         private double ScoreMove(Board board, Move move, PieceColor color, int recurseDepth = 0)
@@ -34,9 +42,7 @@ namespace JohnChess.AI.JohnJohn
             var newBoard = board.PreviewMove(move);
             if (recurseDepth == 2)
             {
-                var myPieces = color == PieceColor.White ? newBoard.WhitePieces : newBoard.BlackPieces;
-                var theirPieces = color == PieceColor.Black ? newBoard.WhitePieces : newBoard.BlackPieces;
-                return scorer.ScorePieces(myPieces, theirPieces);
+                return EvaluateBoardFor(newBoard, color);
             }
             else
             {

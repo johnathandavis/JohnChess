@@ -2,27 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using JohnChess.AI;
 using JohnChess.Moves;
 using JohnChess.Pieces;
 
 namespace JohnChess.AI.JohnJohn
 {
-    public class JohnsBestGuessScorer
+    public class JohnsBestGuessScorer : IPositionEvaluator
     {
-        public double ScorePieces(IEnumerable<ChessPiece> myPieces, IEnumerable<ChessPiece> theirPieces)
-        {
-            // General Strategy:
-            // 1. Convert the IEnumerables to a dict with piece type -> list of pieces of that type
-            var myPieceDict = ConvertPieceListToDict(myPieces);
-            var theirPieceDict = ConvertPieceListToDict(theirPieces);
-
-            if (myPieceDict[PieceType.King].Count == 0) return 3.0;
-            else if (theirPieceDict[PieceType.King].Count == 0) return 3.0;
-
-            double myScore = ScorePlayer1(myPieceDict, theirPieceDict);
-            double theirScore = ScorePlayer1(theirPieceDict, myPieceDict);
-            return myScore - theirScore;
-        }
         private double ScorePlayer1(PieceDict p1, PieceDict p2)
         {
             double pawnScore = ScorePawns(p1, p2);
@@ -32,23 +19,7 @@ namespace JohnChess.AI.JohnJohn
             double queenScore = ScoreQueen(p1, p2);
             return pawnScore + rookScore + knightScore + bishopScore + queenScore;
         }
-        private PieceDict ConvertPieceListToDict(IEnumerable<ChessPiece> pieces)
-        {
-            var pieceDict = new PieceDict();
-            foreach (var piece in pieces)
-            {
-                if (!pieceDict.ContainsKey(piece.Type))
-                {
-                    pieceDict.Add(piece.Type, new List<ChessPiece>());
-                }
-                pieceDict[piece.Type].Add(piece);
-            }
-            if (pieceDict[PieceType.King].Count == 0)
-            {
-                { }
-            }
-            return pieceDict;
-        }
+
         private double ScorePawns(PieceDict p1, PieceDict p2)
         {
             // Pawns are worth slightly more the closer they are to the opponent's king
@@ -137,16 +108,14 @@ namespace JohnChess.AI.JohnJohn
             return (myQueenCount * 8.0 + bonus * 3.0);
         }
 
-
-        private class PieceDict : Dictionary<PieceType, List<ChessPiece>>
+        public double EvaluatePosition(PieceDict myPieces, PieceDict theirPieces)
         {
-            internal PieceDict()
-            {
-                foreach (PieceType pt in (PieceType[])Enum.GetValues(typeof(PieceType)))
-                {
-                    Add(pt, new List<ChessPiece>());
-                }
-            }
+            if (myPieces[PieceType.King].Count == 0) return 3.0;
+            else if (theirPieces[PieceType.King].Count == 0) return 3.0;
+
+            double myScore = ScorePlayer1(myPieces, theirPieces);
+            double theirScore = ScorePlayer1(theirPieces, myPieces);
+            return myScore - theirScore;
         }
     }
 }
