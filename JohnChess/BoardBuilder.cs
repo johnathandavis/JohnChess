@@ -32,15 +32,14 @@ namespace JohnChess
             // Rooks
             SetupPiecesAt(board, color, PieceType.Rook,
                 primaryRank, File.A, File.H);
-            /*
+
             // Knights
             SetupPiecesAt(board, color, PieceType.Knight,
                 primaryRank, File.B, File.G);
             // Bishops
             SetupPiecesAt(board, color, PieceType.Bishop,
                 primaryRank, File.C, File.F);
-                */
-
+                
             // Setup the King and Queen
             SetupPiecesAt(board, color, PieceType.Queen,
                 primaryRank, File.D);
