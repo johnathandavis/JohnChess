@@ -15,11 +15,29 @@ namespace JohnChess.Pieces
         {
             var advancingMoves = GetAdvancingMoves(board);
             var capturingMoves = GetCapturingMoves(board);
-
-            // TODO: En Passant
-            return advancingMoves
-                .Concat(capturingMoves)
+            
+            var advancingAndCapturingMoves = GetAdvancingMoves(board)
+                .Concat(GetCapturingMoves(board))
                 .ToList();
+
+            // We need to go through and swap out capturing moves for
+            // promotion moves if the pawn gets to the last rank
+            var movesWithPromotions = new List<Move>();
+            foreach (var m in advancingAndCapturingMoves)
+            {
+                var newPos = m.NormalPieceMove.NewPosition;
+                if (newPos.Rank == Rank._8 || newPos.Rank == Rank._1)
+                {
+                    // Promotion move!
+                    movesWithPromotions.AddRange(MoveBuilder.CreatePromotionMoves(this, newPos, true));
+                }
+                else
+                {
+                    movesWithPromotions.Add(m);
+                }
+            }
+
+            return movesWithPromotions.Concat(GetEnPassantMoves(board)).ToList();
         }
 
         private List<Move> GetAdvancingMoves(Board board)
@@ -75,7 +93,7 @@ namespace JohnChess.Pieces
                 if (IsPositionEnemyOccupied(board, rightDiagPosition))
                     capturingMoves.Add(MoveBuilder.CreateNormalMove(this, rightDiagPosition, true));
             }
-
+            
             return capturingMoves;
         }
 
@@ -101,7 +119,7 @@ namespace JohnChess.Pieces
 
             return enPassantMoves;
         }
-
+        
         private bool IsPositionEnemyOccupied(Board board, Position position)
         {
             var piece = board[position];

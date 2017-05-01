@@ -8,20 +8,28 @@ namespace JohnChess.Moves
 {
     public class PromotionMove
     {
-        public PromotionMove(Pawn promotingPiece, PromotingPieceType newPieceType, bool takes)
+        public PromotionMove(Pawn promotingPiece, Position newPosition, PromotingPieceType newPieceType, bool takes)
         {
             PromotingPiece = promotingPiece;
+            NewPosition = newPosition;
+            OldPosition = promotingPiece.Position;
             NewPieceType = newPieceType;
             PieceCaptured = takes;
         }
 
         public Pawn PromotingPiece { get; }
+        public Position OldPosition { get; }
+        public Position NewPosition { get; }
         public PromotingPieceType NewPieceType { get; }
         public bool PieceCaptured { get; }
 
         public string ToString(bool pieceCaptured)
         {
-            return "";
+            return PromotingPiece.Type.ToNotationLetter() +
+                OldPosition.ToString() + " " +
+                (PieceCaptured ? "x " : "") +
+                NewPosition.ToString() + " = " +
+                NewPieceType.Type.ToNotationLetter();
         }
 
         public class PromotingPieceType
@@ -32,21 +40,23 @@ namespace JohnChess.Moves
             }
             public PieceType Type { get; }
 
-            public static PromotingPieceType Bishop
+            public static readonly PromotingPieceType Bishop = new PromotingPieceType(PieceType.Bishop);
+            public static readonly PromotingPieceType Knight = new PromotingPieceType(PieceType.Knight);
+            public static readonly PromotingPieceType Rook = new PromotingPieceType(PieceType.Rook);
+            public static readonly PromotingPieceType Queen = new PromotingPieceType(PieceType.Queen);
+
+            public static IReadOnlyList<PromotingPieceType> PromotingPieceTypes
             {
-                get { return new PromotingPieceType(PieceType.Bishop); }
-            }
-            public static PromotingPieceType Knight
-            {
-                get { return new PromotingPieceType(PieceType.Knight); }
-            }
-            public static PromotingPieceType Rook
-            {
-                get { return new PromotingPieceType(PieceType.Rook); }
-            }
-            public static PromotingPieceType Queen
-            {
-                get { return new PromotingPieceType(PieceType.Queen); }
+                get
+                {
+                    return new List<PromotingPieceType>(new PromotingPieceType[]
+                    {
+                        Bishop,
+                        Knight,
+                        Rook,
+                        Queen
+                    });
+                }
             }
         }
     }

@@ -23,8 +23,8 @@ namespace JohnChess.Moves
 
         public override string ToString()
         {
-            return OldPosition.ToString() +
-                Piece.Type.ToNotationLetter() + " " +
+            return Piece.Type.ToNotationLetter() +
+                OldPosition.ToString() + " " +
                 (PieceCaptured ? "x " : "") +
                 NewPosition.ToString();
         }
