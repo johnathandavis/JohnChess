@@ -11,6 +11,10 @@ namespace JohnChess.Pieces
         public Knight(PieceColor color, Position position)
             : base(PieceType.Knight, color, position) { }
 
+        public override ChessPiece MoveTo(Position position)
+        {
+            return new Knight(Color, position);
+        }
         public override List<Move> FindMoves(Board board)
         {
             var moves = new List<Move>();

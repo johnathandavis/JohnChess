@@ -28,7 +28,12 @@ namespace JohnChess
             for (int x = 0; x < pieces.GetLength(0); x++)
             for (int y = 0; y < pieces.GetLength(1); y++)
             {
-                piecesCopy[x, y] = pieces[x, y];
+                var pieceAtSpot = pieces[x, y];
+                if (pieceAtSpot != null)
+                {
+                    piecesCopy[x, y] = pieceAtSpot.MoveTo(pieceAtSpot.Position);
+                }
+
             }
             this.pieces = piecesCopy;
             this.moveHistory = new List<Move>(moveHistory);
@@ -46,7 +51,11 @@ namespace JohnChess
             }
             private set
             {
-                pieces[p.RowX, p.ColY] = value;
+                var val = value;
+                if (val != null)
+                {
+                    pieces[p.RowX, p.ColY] = val.MoveTo(val.Position);
+                }
             }
         }
         public ChessPiece this[File f, Rank r]
@@ -93,9 +102,17 @@ namespace JohnChess
         {
             get { return whitePieces; }
         }
-
+        internal bool DoesMovePutKingInCheck(PieceColor color, Move move)
+        {
+            var tempBoard = PreviewMove(move);
+            return IsKingInCheck(tempBoard, color);
+        }
 
         public List<Move> GetPossibleMoves(PieceColor color)
+        {
+            return GetPossibleMoves(color, false);
+        }
+        internal List<Move> GetPossibleMoves(PieceColor color, bool skipKingCheck)
         {
             var ls = (color == PieceColor.Black) ? blackPieces : whitePieces;
             List<Move> moves = new List<Move>();
@@ -103,7 +120,20 @@ namespace JohnChess
             {
                 moves.AddRange(p.FindMoves(this));
             }
-            return (from m in moves where IsValidMove(m) select m).ToList(); ;
+            var finalList = (from m in moves
+                    where IsValidMove(m) && (skipKingCheck || !DoesMovePutKingInCheck(color, m))
+                    select m).ToList();
+
+            if (finalList.Count == 0)
+            {
+                // Okay, we have nowhere to go.
+                // Is this because we are in stalemate (currently not in checK?)
+                // Or checkmate? (currently in check)
+                bool currentlyInCheck = IsKingInCheck(this, PieceColor.White);
+                if (currentlyInCheck) throw new CheckmateException();
+                else throw new StalemateException();
+            }
+            return finalList;
         }
 
         private bool IsValidMove(Move move)
@@ -122,8 +152,15 @@ namespace JohnChess
             var newPosPiece = this[newPos];
             return newPosPiece == null || newPosPiece.Color != move.Piece.Color;
         }
-        
         public Board PerformMove(Move move)
+        {
+            return PerformMove(move, false);
+        }
+        public Board PreviewMove(Move move)
+        {
+            return PerformMove(move, true);
+        }
+        private Board PerformMove(Move move, bool preview)
         {
             var newBoard = new Board(moveHistory, pieces, whitePieces, blackPieces);
             newBoard.moveHistory.Add(move);
@@ -131,20 +168,20 @@ namespace JohnChess
             switch (move.Type)
             {
                 case MoveType.NormalPiece:
-                    PerformNormalPieceMove(newBoard, move);
+                    PerformNormalPieceMove(newBoard, move, preview);
                     break;
                 case MoveType.Promotion:
-                    PerformPromotionPieceMove(newBoard, move);
+                    PerformPromotionPieceMove(newBoard, move, preview);
                     break;
                 case MoveType.EnPassant:
-                    PerformEnPassantPieceMove(newBoard, move);
+                    PerformEnPassantPieceMove(newBoard, move, preview);
                     break;
                 default:
                     throw new AlienChessException("Unknown move type!");
             }
             return newBoard;
         }
-        private void PerformNormalPieceMove(Board newBoard, Move move)
+        private void PerformNormalPieceMove(Board newBoard, Move move, bool preview)
         {
             var normalMove = move.NormalPieceMove;
             var existingPiece = newBoard[normalMove.NewPosition];
@@ -154,12 +191,12 @@ namespace JohnChess
                     newBoard.blackPieces.Remove(existingPiece);
                 else newBoard.whitePieces.Remove(existingPiece);
             }
-            normalMove.Piece.MoveHistory.Add(move);
+
+            if (!preview) normalMove.Piece.MoveHistory.Add(move);
             newBoard[normalMove.Piece.Position] = null;
-            newBoard[normalMove.NewPosition] = normalMove.Piece;
-            normalMove.Piece.Position = normalMove.NewPosition;
+            newBoard[normalMove.NewPosition] = normalMove.Piece.MoveTo(normalMove.NewPosition);
         }
-        private void PerformPromotionPieceMove(Board newBoard, Move move)
+        private void PerformPromotionPieceMove(Board newBoard, Move move, bool preview)
         {
             var promotion = move.Promotion;
             var existingPiece = newBoard[promotion.NewPosition];
@@ -169,7 +206,7 @@ namespace JohnChess
                     newBoard.blackPieces.Remove(existingPiece);
                 else newBoard.whitePieces.Remove(existingPiece);
             }
-
+            
             var pieceHistory = new List<Move>(promotion.PromotingPiece.MoveHistory);
             if (promotion.PromotingPiece.Color == PieceColor.White)
                 newBoard.whitePieces.Remove(promotion.PromotingPiece);
@@ -181,13 +218,12 @@ namespace JohnChess
                 .At(promotion.NewPosition)
                 .Create();
             newPiece.MoveHistory.AddRange(pieceHistory);
-            newPiece.MoveHistory.Add(move);
+            if (!preview) newPiece.MoveHistory.Add(move);
 
             newBoard.AddPiece(newPiece);
             newBoard[promotion.OldPosition] = null;
-            promotion.PromotingPiece.Position = promotion.NewPosition;
         }
-        private void PerformEnPassantPieceMove(Board newBoard, Move move)
+        private void PerformEnPassantPieceMove(Board newBoard, Move move, bool preview)
         {
             var enPassant = move.EnPassant;
             var existingPiece = newBoard[enPassant.CapturePosition];
@@ -197,11 +233,34 @@ namespace JohnChess
                     newBoard.blackPieces.Remove(existingPiece);
                 else newBoard.whitePieces.Remove(existingPiece);
             }
-            enPassant.AttackingPawn.MoveHistory.Add(move);
+            
+            if (!preview) enPassant.AttackingPawn.MoveHistory.Add(move);
             newBoard[enPassant.AttackingPawn.Position] = null;
             newBoard[enPassant.CapturePosition] = null;
-            newBoard[enPassant.DestinationPosition] = enPassant.AttackingPawn;
-            enPassant.AttackingPawn.Position = enPassant.DestinationPosition;
+            newBoard[enPassant.DestinationPosition] = enPassant.AttackingPawn.MoveTo(enPassant.DestinationPosition);
+        }
+
+
+
+        public static bool IsKingInCheck(Board board, PieceColor color)
+        {
+            // Is there a king on the board for this color? (There might not be
+            // when this is used for constructions or unit tests)
+            var pieces = color == PieceColor.Black ? board.BlackPieces : board.WhitePieces;
+            var kingPieces = (from p in pieces where p.Type == PieceType.King select p).ToList();
+            if (kingPieces.Count == 0) return false;
+            var king = kingPieces[0];
+
+            var moves = board.GetPossibleMoves(color.Opposite(), true);
+            var takingMoves = (from m in moves
+                               where m.PieceCaptured &&
+                               m.Type == MoveType.NormalPiece
+                               select m.NormalPieceMove).ToList();
+
+            var takeKingMoves = (from m in takingMoves
+                                 where m.NewPosition.Equals(king.Position)
+                                 select m).ToList();
+            return takeKingMoves.Count > 0;
         }
     }
 }

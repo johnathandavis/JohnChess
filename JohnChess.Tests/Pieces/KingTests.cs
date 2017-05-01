@@ -75,12 +75,14 @@ namespace JohnChess.Tests.Pieces
                 .At(enemyPos)
                 .Create());
 
-            var moves = kingD4Board.GetPossibleMoves(PieceColor.White);
+            // Have to skip king check to make sure we get all moves.
+            // King check functionality is tested in another class.
+            var moves = kingD4Board.GetPossibleMoves(PieceColor.White, true);
             var kingNormalMoves = (from m in moves
                                where m.Type == MoveType.NormalPiece &&
                                m.NormalPieceMove.Piece.Type == PieceType.King
                                select m.NormalPieceMove).ToList();
-
+            
             Assert.Equal(kingNormalMoves.Count, 7);
             var takingMoves = (from m in kingNormalMoves
                                where m.PieceCaptured
@@ -88,6 +90,23 @@ namespace JohnChess.Tests.Pieces
             Assert.Equal(takingMoves.Count, 1);
             var takingMove = takingMoves[0];
             Assert.Equal(takingMove.NewPosition, enemyPos);
+        }
+
+        [Fact]
+        public void KingCanCastleQueenside()
+        {
+            var kingBoard = CreateBoardWithWhiteKingAt(new Position(File.E, Rank._1));
+            kingBoard.AddPiece(new PieceBuilder(PieceType.Rook)
+                .As(PieceColor.White)
+                .At(new Position(File.A, Rank._1))
+                .Create());
+
+            var moves = kingBoard.GetPossibleMoves(PieceColor.White);
+            var castleMoves = (from m in moves
+                               where m.Type == MoveType.Castle
+                               select m.Castle).ToList();
+
+            Assert.Equal(castleMoves.Count, 1);
         }
     }
 }

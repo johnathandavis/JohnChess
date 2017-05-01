@@ -11,6 +11,10 @@ namespace JohnChess.Pieces
         public Rook(PieceColor color, Position position)
             : base(PieceType.Rook, color, position) { }
 
+        public override ChessPiece MoveTo(Position position)
+        {
+            return new Rook(Color, position);
+        }
         public override List<Move> FindMoves(Board board)
         {
             return new List<Move>()

@@ -11,6 +11,10 @@ namespace JohnChess.Pieces
         public Pawn(PieceColor color, Position position)
             : base(PieceType.Pawn, color, position) { }
 
+        public override ChessPiece MoveTo(Position position)
+        {
+            return new Pawn(Color, position);
+        }
         public override List<Move> FindMoves(Board board)
         {
             var advancingMoves = GetAdvancingMoves(board);

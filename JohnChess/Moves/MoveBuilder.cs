@@ -29,5 +29,10 @@ namespace JohnChess.Moves
             var enPassant = new EnPassantMove(pawn, capturePosition, newPosition);
             return new Move(enPassant);
         }
+        public static Move CreateCastleMove(King king, Rook rook)
+        {
+            var castle = new CastleMove(king, rook);
+            return new Move(castle);
+        }
     }
 }

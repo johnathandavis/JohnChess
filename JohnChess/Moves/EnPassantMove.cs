@@ -15,8 +15,8 @@ namespace JohnChess.Moves
             DestinationPosition = destPos;
         }
 
-        public Pawn AttackingPawn { get; set; }
-        public Position CapturePosition { get; set; }
-        public Position DestinationPosition { get; set; }
+        public Pawn AttackingPawn { get; }
+        public Position CapturePosition { get; }
+        public Position DestinationPosition { get; }
     }
 }

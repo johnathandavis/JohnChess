@@ -11,6 +11,10 @@ namespace JohnChess.Pieces
         public Bishop(PieceColor color, Position position)
             : base(PieceType.Bishop, color, position) { }
 
+        public override ChessPiece MoveTo(Position position)
+        {
+            return new Bishop(Color, position);
+        }
         public override List<Move> FindMoves(Board board)
         {
             return GetMovesWithDirection(board, 1, 1)

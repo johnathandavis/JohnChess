@@ -10,10 +10,10 @@ namespace JohnChess.Pieces
         {
             Type = type;
             Color = color;
-            Position = position;
+            Position = new Position(position.File, position.Rank);
         }
 
-        public Position Position { get; set; }
+        public Position Position { get; }
         public PieceColor Color { get; }
         public PieceType Type { get; }
         public List<Moves.Move> MoveHistory { get; } = new List<Moves.Move>();
@@ -29,6 +29,6 @@ namespace JohnChess.Pieces
             }
         }
 
-
+        public abstract ChessPiece MoveTo(Position position);
     }
 }
