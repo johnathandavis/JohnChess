@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using JohnChess;
 using JohnChess.Moves;
 using JohnChess.Pieces;
+using JohnChess.AI;
+using JohnChess.AI.JohnJohn;
 
 namespace JohnChessUI
 {
@@ -22,7 +24,9 @@ namespace JohnChessUI
 
         static void Main(string[] args)
         {
-            var game = new Game();
+            var johnJohn = new JohnJohnPlayer();
+            var randomPlayer = new RandomPlayer();
+            var game = new Game(johnJohn, randomPlayer);
 
             while (true)
             {
@@ -33,7 +37,7 @@ namespace JohnChessUI
                 Console.WriteLine();
                 Console.WriteLine("Enter Move (blank for AI):");
                 string move = Console.ReadLine();
-                game.MakeRandomMove(moves);
+                game.MakePlayerMove();
             }
         }
 

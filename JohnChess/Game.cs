@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
+using JohnChess.AI;
 using JohnChess.Moves;
 using JohnChess.Pieces;
 
@@ -9,11 +10,15 @@ namespace JohnChess
 {
     public class Game
     {
+        private readonly IPlayer whitePlayer;
+        private readonly IPlayer blackPlayer;
         private readonly Random rnd = new Random();
         private bool whiteTurn = true;
 
-        public Game()
+        public Game(IPlayer whitePlayer, IPlayer blackPlayer)
         {
+            this.whitePlayer = whitePlayer;
+            this.blackPlayer = blackPlayer;
             Board = Board.NewStandardBoard();
         }
 
@@ -26,13 +31,28 @@ namespace JohnChess
             PieceColor color = whiteTurn ? PieceColor.White : PieceColor.Black;
             return Board.GetPossibleMoves(color);
         }
-        public void MakeRandomMove(List<Move> moves)
+        public void MakePlayerMove()
         {
-            var randomMove = moves[rnd.Next(0, moves.Count)];
-            Board = Board.PerformMove(randomMove);
+            Move moveToMake;
+            if (WhiteTurn)
+            {
+                moveToMake = whitePlayer.SelectMove(Board, PieceColor.White);
+            }
+            else
+            {
+                moveToMake = blackPlayer.SelectMove(Board, PieceColor.Black);
+            }
+            Board = Board.PerformMove(moveToMake);
             NextTurn();
         }
 
         public Board Board { get; private set; }
+        public bool WhiteTurn
+        {
+            get
+            {
+                return whiteTurn;
+            }
+        }
     }
 }

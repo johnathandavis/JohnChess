@@ -87,7 +87,7 @@ namespace JohnChess
             this[piece.Position] = piece;
             cacheSet = false;
         }
-        internal IReadOnlyList<ChessPiece> BlackPieces
+        public IReadOnlyList<ChessPiece> BlackPieces
         {
             get
             {
@@ -95,7 +95,7 @@ namespace JohnChess
                 return blackPieceCache;
             }
         }
-        internal IReadOnlyList<ChessPiece> WhitePieces
+        public IReadOnlyList<ChessPiece> WhitePieces
         {
             get
             {
