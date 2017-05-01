@@ -23,5 +23,10 @@ namespace JohnChess.Moves
         public King King { get; }
         public Rook Rook { get; }
         public CastleMoveType Type { get; }
+
+        public override string ToString()
+        {
+            return Type == CastleMoveType.KingSide ? "OO" : "OOO";
+        }
     }
 }

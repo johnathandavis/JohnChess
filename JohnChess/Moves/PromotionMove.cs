@@ -23,7 +23,7 @@ namespace JohnChess.Moves
         public PromotingPieceType NewPieceType { get; }
         public bool PieceCaptured { get; }
 
-        public string ToString(bool pieceCaptured)
+        public override string ToString()
         {
             return PromotingPiece.Type.ToNotationLetter() +
                 OldPosition.ToString() + " " +

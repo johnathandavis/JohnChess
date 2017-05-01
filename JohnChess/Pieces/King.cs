@@ -18,7 +18,7 @@ namespace JohnChess.Pieces
         public override List<Move> FindMoves(Board board)
         {
             return FindKingNormalMoves(board)
-                //.Concat(FindKingCastleMoves(board))
+                .Concat(FindKingCastleMoves(board))
                 .ToList();
         }
 
@@ -94,7 +94,7 @@ namespace JohnChess.Pieces
             int increment = (myFile > startFile) ? 1 : -1;
 
             // Rook is eligible. Check pieces in between.
-            for (int f = startFile; f != myFile; f += increment)
+            for (int f = startFile + increment; f != myFile; f += increment)
             {
                 var pieceInFile = board[(File)f, Position.Rank];
                 if (pieceInFile != null) return null;

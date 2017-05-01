@@ -15,7 +15,7 @@ namespace JohnChess
         private bool cacheSet = false;
         private List<ChessPiece> whitePieceCache;
         private List<ChessPiece> blackPieceCache;
-
+        
         private Board()
         {
             moveHistory = new List<Move>();
@@ -119,6 +119,7 @@ namespace JohnChess
             List<Move> moves = new List<Move>();
             foreach (var p in ls)
             {
+                if (skipKingCheck && p.Type == PieceType.King) continue;
                 moves.AddRange(p.FindMoves(this));
             }
             var finalList = (from m in moves
@@ -197,6 +198,9 @@ namespace JohnChess
                 case MoveType.EnPassant:
                     PerformEnPassantPieceMove(newBoard, move, preview);
                     break;
+                case MoveType.Castle:
+                    PerformCastleMove(newBoard, move, preview);
+                    break;
                 default:
                     throw new AlienChessException("Unknown move type!");
             }
@@ -231,7 +235,30 @@ namespace JohnChess
             newBoard[enPassant.CapturePosition] = null;
             newBoard[enPassant.DestinationPosition] = enPassant.AttackingPawn.MoveTo(enPassant.DestinationPosition);
         }
-        
+        private void PerformCastleMove(Board newBoard, Move move, bool preview)
+        {
+            var castle = move.Castle;
+            var king = castle.King;
+            var rook = castle.Rook;
+
+            int kingHorizMove = castle.Type == CastleMoveType.KingSide ? 2 : -2;
+
+            newBoard[king.Position] = null;
+            king = (King)king.MoveTo(king.Position.MoveHoriz(kingHorizMove));
+            newBoard[king.Position] = king;
+
+            int rookHorizMove = castle.Type == CastleMoveType.KingSide ? -1 : 1;
+            newBoard[rook.Position] = null;
+            rook = (Rook)rook.MoveTo(king.Position.MoveHoriz(rookHorizMove));
+            newBoard[rook.Position] = rook;
+
+            if (!preview)
+            {
+                newBoard[king.Position].MoveHistory.Add(move);
+                newBoard[rook.Position].MoveHistory.Add(move);
+            }
+        }
+
         public static bool IsKingInCheck(Board board, PieceColor color)
         {
             // Is there a king on the board for this color? (There might not be

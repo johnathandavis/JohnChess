@@ -147,28 +147,41 @@ namespace JohnChessUI
 
         private static void DrawMoveList(string title, int margin, IReadOnlyList<Move> moves)
         {
+            int colMax = 25;
             Console.CursorLeft = margin;
             Console.CursorTop = 0;
             Console.Write(title);
 
-            List<Move> firstCol = moves.Take(Math.Min(moves.Count, 30)).ToList();
-            List<Move> secondCol = moves.Count < 30
+            List<Move> firstCol = moves.Take(Math.Min(moves.Count, colMax)).ToList();
+            List<Move> secondCol = moves.Count < colMax
                 ? new List<Move>()
-                : moves.Skip(30).ToList();
+                : moves.Skip(colMax).ToList();
 
-            DrawListColumn(firstCol, margin, 1);
-            DrawListColumn(secondCol, margin + 16, firstCol.Count + 1);
+            DrawListColumn(firstCol, margin, 1, colMax);
+            DrawListColumn(secondCol, margin + 16, firstCol.Count + 1, colMax);
             Console.CursorLeft = 0;
             Console.CursorTop = 0;
         }
-        private static void DrawListColumn(List<Move> moves, int leftMargin, int startNumber)
+        private static void DrawListColumn(List<Move> moves, int leftMargin, int startNumber, int colMax)
         {
             int rowNumber = 1;
-            foreach (var move in moves)
+            var drawMoves = new List<Move>(moves);
+            for (int x = drawMoves.Count; x < colMax; x++) drawMoves.Add(null);
+            foreach (var move in drawMoves)
             {
                 Console.CursorLeft = leftMargin;
                 Console.CursorTop = rowNumber;
-                Console.Write(startNumber.ToString() + ":  " + move + "          ");
+
+                if (move == null)
+                {
+                    string drawStr = "";
+                    for (int x = 0; x < 15; x++) drawStr += " ";
+                    Console.Write(drawStr);
+                }
+                else
+                {
+                    Console.Write(startNumber.ToString() + ":  " + move + "          ");
+                }
                 startNumber++;
                 rowNumber++;
             }
