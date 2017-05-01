@@ -11,18 +11,17 @@ namespace JohnChess
     {
         private readonly List<Move> moveHistory;
         private readonly ChessPiece[,] pieces;
-        private readonly List<ChessPiece> whitePieces;
-        private readonly List<ChessPiece> blackPieces;
+
+        private bool cacheSet = false;
+        private List<ChessPiece> whitePieceCache;
+        private List<ChessPiece> blackPieceCache;
 
         private Board()
         {
             moveHistory = new List<Move>();
             pieces = new ChessPiece[8, 8];
-            whitePieces = new List<ChessPiece>();
-            blackPieces = new List<ChessPiece>();
         }
-        private Board(List<Move> moveHistory, ChessPiece[,] pieces,
-            List<ChessPiece> whitePieces, List<ChessPiece> blackPieces)
+        private Board(List<Move> moveHistory, ChessPiece[,] pieces)
         {
             ChessPiece[,] piecesCopy = new ChessPiece[pieces.GetLength(0), pieces.GetLength(1)];
             for (int x = 0; x < pieces.GetLength(0); x++)
@@ -37,8 +36,6 @@ namespace JohnChess
             }
             this.pieces = piecesCopy;
             this.moveHistory = new List<Move>(moveHistory);
-            this.whitePieces = new List<ChessPiece>(whitePieces);
-            this.blackPieces = new List<ChessPiece>(blackPieces);
         }
 
         #region "Indexers"
@@ -51,11 +48,8 @@ namespace JohnChess
             }
             private set
             {
-                var val = value;
-                if (val != null)
-                {
-                    pieces[p.RowX, p.ColY] = val.MoveTo(val.Position);
-                }
+                pieces[p.RowX, p.ColY] = value;
+                cacheSet = false;
             }
         }
         public ChessPiece this[File f, Rank r]
@@ -91,16 +85,23 @@ namespace JohnChess
         internal void AddPiece(ChessPiece piece)
         {
             this[piece.Position] = piece;
-            if (piece.Color == PieceColor.Black) blackPieces.Add(piece);
-            if (piece.Color == PieceColor.White) whitePieces.Add(piece);
+            cacheSet = false;
         }
         internal IReadOnlyList<ChessPiece> BlackPieces
         {
-            get { return blackPieces; }
+            get
+            {
+                if (!cacheSet) LoadPieceCache();
+                return blackPieceCache;
+            }
         }
         internal IReadOnlyList<ChessPiece> WhitePieces
         {
-            get { return whitePieces; }
+            get
+            {
+                if (!cacheSet) LoadPieceCache();
+                return whitePieceCache;
+            }
         }
         internal bool DoesMovePutKingInCheck(PieceColor color, Move move)
         {
@@ -114,7 +115,7 @@ namespace JohnChess
         }
         internal List<Move> GetPossibleMoves(PieceColor color, bool skipKingCheck)
         {
-            var ls = (color == PieceColor.Black) ? blackPieces : whitePieces;
+            var ls = (color == PieceColor.Black) ? BlackPieces : WhitePieces;
             List<Move> moves = new List<Move>();
             foreach (var p in ls)
             {
@@ -129,6 +130,10 @@ namespace JohnChess
                 // Okay, we have nowhere to go.
                 // Is this because we are in stalemate (currently not in checK?)
                 // Or checkmate? (currently in check)
+                // Third option: if there are no pieces, it is a 'pass'.
+                // This is used for unit testing.
+                if (ls.Count == 0) return new List<Move>();
+
                 bool currentlyInCheck = IsKingInCheck(this, PieceColor.White);
                 if (currentlyInCheck) throw new CheckmateException();
                 else throw new StalemateException();
@@ -146,6 +151,22 @@ namespace JohnChess
                     return true;
             }
         }
+        private void LoadPieceCache()
+        {
+            whitePieceCache = new List<ChessPiece>();
+            blackPieceCache = new List<ChessPiece>();
+            for (int x = 0; x < pieces.GetLength(0); x++)
+            {
+                for (int y = 0; y < pieces.GetLength(1); y++)
+                {
+                    var pieceAt = pieces[x, y];
+                    if (pieceAt == null) continue;
+                    if (pieceAt.Color == PieceColor.White) whitePieceCache.Add(pieceAt);
+                    else blackPieceCache.Add(pieceAt);
+                }
+            }
+            cacheSet = true;
+        }
         private bool IsValidNormalMove(NormalPieceMove move)
         {
             var newPos = move.NewPosition;
@@ -162,7 +183,7 @@ namespace JohnChess
         }
         private Board PerformMove(Move move, bool preview)
         {
-            var newBoard = new Board(moveHistory, pieces, whitePieces, blackPieces);
+            var newBoard = new Board(moveHistory, pieces);
             newBoard.moveHistory.Add(move);
 
             switch (move.Type)
@@ -184,14 +205,6 @@ namespace JohnChess
         private void PerformNormalPieceMove(Board newBoard, Move move, bool preview)
         {
             var normalMove = move.NormalPieceMove;
-            var existingPiece = newBoard[normalMove.NewPosition];
-            if (existingPiece != null)
-            {
-                if (existingPiece.Color == PieceColor.Black)
-                    newBoard.blackPieces.Remove(existingPiece);
-                else newBoard.whitePieces.Remove(existingPiece);
-            }
-
             if (!preview) normalMove.Piece.MoveHistory.Add(move);
             newBoard[normalMove.Piece.Position] = null;
             newBoard[normalMove.NewPosition] = normalMove.Piece.MoveTo(normalMove.NewPosition);
@@ -199,20 +212,7 @@ namespace JohnChess
         private void PerformPromotionPieceMove(Board newBoard, Move move, bool preview)
         {
             var promotion = move.Promotion;
-            var existingPiece = newBoard[promotion.NewPosition];
-            if (existingPiece != null)
-            {
-                if (existingPiece.Color == PieceColor.Black)
-                    newBoard.blackPieces.Remove(existingPiece);
-                else newBoard.whitePieces.Remove(existingPiece);
-            }
-            
             var pieceHistory = new List<Move>(promotion.PromotingPiece.MoveHistory);
-            if (promotion.PromotingPiece.Color == PieceColor.White)
-                newBoard.whitePieces.Remove(promotion.PromotingPiece);
-            else
-                newBoard.blackPieces.Remove(promotion.PromotingPiece);
-
             var newPiece = new PieceBuilder(promotion.NewPieceType.Type)
                 .As(promotion.PromotingPiece.Color)
                 .At(promotion.NewPosition)
@@ -226,22 +226,12 @@ namespace JohnChess
         private void PerformEnPassantPieceMove(Board newBoard, Move move, bool preview)
         {
             var enPassant = move.EnPassant;
-            var existingPiece = newBoard[enPassant.CapturePosition];
-            if (existingPiece != null)
-            {
-                if (existingPiece.Color == PieceColor.Black)
-                    newBoard.blackPieces.Remove(existingPiece);
-                else newBoard.whitePieces.Remove(existingPiece);
-            }
-            
             if (!preview) enPassant.AttackingPawn.MoveHistory.Add(move);
             newBoard[enPassant.AttackingPawn.Position] = null;
             newBoard[enPassant.CapturePosition] = null;
             newBoard[enPassant.DestinationPosition] = enPassant.AttackingPawn.MoveTo(enPassant.DestinationPosition);
         }
-
-
-
+        
         public static bool IsKingInCheck(Board board, PieceColor color)
         {
             // Is there a king on the board for this color? (There might not be

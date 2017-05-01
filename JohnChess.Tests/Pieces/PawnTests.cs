@@ -208,7 +208,7 @@ namespace JohnChess.Tests.Pieces
         public void PawnCantEnPassantWhenAdvanceWasntLatestMove()
         {
             var pawnD5Board = CreateEnPassantBoardSetup();
-            var blackPiece = pawnD5Board.LastMove.NormalPieceMove.Piece;
+            var blackPiece = pawnD5Board.BlackPieces[0];
             blackPiece.MoveHistory.Clear();
 
             var whitePawnResponses = pawnD5Board.GetPossibleMoves(PieceColor.White);

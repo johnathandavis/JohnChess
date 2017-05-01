@@ -8,17 +8,17 @@ namespace JohnChess.Pieces
 {
     public class King : ChessPiece
     {
-        public King(PieceColor color, Position position)
-            : base(PieceType.King, color, position) { }
+        public King(PieceColor color, Position position, List<Moves.Move> moveHistory)
+            : base(PieceType.King, color, position, moveHistory) { }
 
         public override ChessPiece MoveTo(Position position)
         {
-            return new King(Color, position);
+            return new King(Color, position, MoveHistory);
         }
         public override List<Move> FindMoves(Board board)
         {
             return FindKingNormalMoves(board)
-                .Concat(FindKingCastleMoves(board))
+                //.Concat(FindKingCastleMoves(board))
                 .ToList();
         }
 

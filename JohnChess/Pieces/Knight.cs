@@ -8,12 +8,12 @@ namespace JohnChess.Pieces
 {
     public class Knight : ChessPiece
     {
-        public Knight(PieceColor color, Position position)
-            : base(PieceType.Knight, color, position) { }
+        public Knight(PieceColor color, Position position, List<Moves.Move> moveHistory)
+            : base(PieceType.Knight, color, position, moveHistory) { }
 
         public override ChessPiece MoveTo(Position position)
         {
-            return new Knight(Color, position);
+            return new Knight(Color, position, MoveHistory);
         }
         public override List<Move> FindMoves(Board board)
         {

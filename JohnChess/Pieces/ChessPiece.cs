@@ -6,11 +6,12 @@ namespace JohnChess.Pieces
 {
     public abstract class ChessPiece
     {
-        public ChessPiece(PieceType type, PieceColor color, Position position)
+        public ChessPiece(PieceType type, PieceColor color, Position position, List<Moves.Move> moveHistory)
         {
             Type = type;
             Color = color;
             Position = new Position(position.File, position.Rank);
+            MoveHistory = new List<Moves.Move>(moveHistory);
         }
 
         public Position Position { get; }
@@ -30,5 +31,6 @@ namespace JohnChess.Pieces
         }
 
         public abstract ChessPiece MoveTo(Position position);
+        
     }
 }

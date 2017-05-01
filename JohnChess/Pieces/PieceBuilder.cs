@@ -31,17 +31,17 @@ namespace JohnChess.Pieces
             switch (pieceType)
             {
                 case PieceType.Bishop:
-                    return new Bishop(color, position);
+                    return new Bishop(color, position, new List<Moves.Move>());
                 case PieceType.King:
-                    return new King(color, position);
+                    return new King(color, position, new List<Moves.Move>());
                 case PieceType.Knight:
-                    return new Knight(color, position);
+                    return new Knight(color, position, new List<Moves.Move>());
                 case PieceType.Pawn:
-                    return new Pawn(color, position);
+                    return new Pawn(color, position, new List<Moves.Move>());
                 case PieceType.Queen:
-                    return new Queen(color, position);
+                    return new Queen(color, position, new List<Moves.Move>());
                 case PieceType.Rook:
-                    return new Rook(color, position);
+                    return new Rook(color, position, new List<Moves.Move>());
                 default:
                     throw new Exception("What alien version of chess are you playing?");
             }

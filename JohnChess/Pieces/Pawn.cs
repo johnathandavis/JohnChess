@@ -8,12 +8,12 @@ namespace JohnChess.Pieces
 {
     public class Pawn : ChessPiece
     {
-        public Pawn(PieceColor color, Position position)
-            : base(PieceType.Pawn, color, position) { }
+        public Pawn(PieceColor color, Position position, List<Moves.Move> moveHistory)
+            : base(PieceType.Pawn, color, position, moveHistory) { }
 
         public override ChessPiece MoveTo(Position position)
         {
-            return new Pawn(Color, position);
+            return new Pawn(Color, position, MoveHistory);
         }
         public override List<Move> FindMoves(Board board)
         {

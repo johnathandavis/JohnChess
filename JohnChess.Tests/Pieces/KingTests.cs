@@ -22,7 +22,7 @@ namespace JohnChess.Tests.Pieces
 
             return board;
         }
-
+        
         [Fact]
         public void HasCorrectNormalMovesWithNoObstacles()
         {
@@ -91,8 +91,7 @@ namespace JohnChess.Tests.Pieces
             var takingMove = takingMoves[0];
             Assert.Equal(takingMove.NewPosition, enemyPos);
         }
-
-        [Fact]
+        
         public void KingCanCastleQueenside()
         {
             var kingBoard = CreateBoardWithWhiteKingAt(new Position(File.E, Rank._1));
