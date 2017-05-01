@@ -19,19 +19,40 @@ namespace JohnChess.AI.JohnJohn
         public Move SelectMove(Board board, PieceColor color)
         {
             var allMoves = board.GetPossibleMoves(color);
-            var sortedMoves = (from m in allMoves
-                               orderby ScoreMove(board, m, color) descending
-                               select m).ToList();
+            var moveDict = allMoves.ToDictionary(
+                (m) => m,
+                (m) => ScoreMove(board, m, color));
+            var sortedescending = (from kvp in moveDict
+                                   orderby kvp.Value descending
+                                   select kvp).ToList();
 
-            return sortedMoves.First();
+            return sortedescending.First().Key;
         }
 
-        private double ScoreMove(Board board, Move move, PieceColor color)
+        private double ScoreMove(Board board, Move move, PieceColor color, int recurseDepth = 0)
         {
             var newBoard = board.PreviewMove(move);
-            var myPieces = color == PieceColor.White ? newBoard.WhitePieces : newBoard.BlackPieces;
-            var theirPieces = color == PieceColor.Black ? newBoard.WhitePieces : newBoard.BlackPieces;
-            return scorer.ScorePieces(myPieces, theirPieces);
+            if (recurseDepth == 2)
+            {
+                var myPieces = color == PieceColor.White ? newBoard.WhitePieces : newBoard.BlackPieces;
+                var theirPieces = color == PieceColor.Black ? newBoard.WhitePieces : newBoard.BlackPieces;
+                return scorer.ScorePieces(myPieces, theirPieces);
+            }
+            else
+            {
+                int newRecurseDepth = recurseDepth + 1;
+                var responseMoves = board.GetPossibleMoves(color.Opposite());
+                if (responseMoves.Count == 0) return double.MaxValue;
+                var responseDict = responseMoves.AsParallel().ToDictionary(
+                    (m) => m,
+                    (m) => ScoreMove(newBoard, m, color, recurseDepth + 1));
+
+                var movesFromBestToWorst = (from kvp in responseDict
+                                orderby kvp.Value descending
+                                select kvp);
+                var bestMove = (recurseDepth % 2 == 0 ? movesFromBestToWorst.First() : movesFromBestToWorst.Last());
+                return bestMove.Value;
+            }
         }
     }
 }

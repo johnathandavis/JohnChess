@@ -48,6 +48,10 @@ namespace JohnChess
             }
             private set
             {
+                if (pieces[p.RowX, p.ColY]?.Type == PieceType.King && value != null)
+                {
+                    { };
+                }
                 pieces[p.RowX, p.ColY] = value;
                 cacheSet = false;
             }
@@ -165,6 +169,16 @@ namespace JohnChess
                     if (pieceAt.Color == PieceColor.White) whitePieceCache.Add(pieceAt);
                     else blackPieceCache.Add(pieceAt);
                 }
+            }
+            var kings = (from p in whitePieceCache where p.Type == PieceType.King select p).Count();
+            if (kings == 0)
+            {
+                { }
+            }
+            kings = (from p in blackPieceCache where p.Type == PieceType.King select p).Count();
+            if (kings == 0)
+            {
+                { }
             }
             cacheSet = true;
         }

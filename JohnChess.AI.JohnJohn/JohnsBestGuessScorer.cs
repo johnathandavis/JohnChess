@@ -16,6 +16,9 @@ namespace JohnChess.AI.JohnJohn
             var myPieceDict = ConvertPieceListToDict(myPieces);
             var theirPieceDict = ConvertPieceListToDict(theirPieces);
 
+            if (myPieceDict[PieceType.King].Count == 0) return 3.0;
+            else if (theirPieceDict[PieceType.King].Count == 0) return 3.0;
+
             double myScore = ScorePlayer1(myPieceDict, theirPieceDict);
             double theirScore = ScorePlayer1(theirPieceDict, myPieceDict);
             return myScore - theirScore;
@@ -39,6 +42,10 @@ namespace JohnChess.AI.JohnJohn
                     pieceDict.Add(piece.Type, new List<ChessPiece>());
                 }
                 pieceDict[piece.Type].Add(piece);
+            }
+            if (pieceDict[PieceType.King].Count == 0)
+            {
+                { }
             }
             return pieceDict;
         }
@@ -73,7 +80,10 @@ namespace JohnChess.AI.JohnJohn
 
                 var fileDistance = Math.Abs((int)kingFile - (int)pawnFile);
                 var rankDistance = Math.Abs((int)kingRank - (int)pawnRank);
-                double pawnScore = 1.5 - 0.05 * (fileDistance + rankDistance);
+                fileDistance = fileDistance * fileDistance;
+                rankDistance = rankDistance * rankDistance;
+                double absDistance = (double)Math.Sqrt((double)(fileDistance+rankDistance));
+                double pawnScore = 1.5 - 0.1 * absDistance;
                 if (pawnFileDict.ContainsKey(p.Position.File) &&
                     pawnFileDict[p.Position.File].Count > 1) pawnScore -= 0.15;
                 totalPawnScore += pawnScore;

@@ -25,7 +25,7 @@ namespace JohnChessUI
         static void Main(string[] args)
         {
             var johnJohn = new JohnJohnPlayer();
-            var randomPlayer = new RandomPlayer();
+            var randomPlayer = new JohnJohnPlayer();
             var game = new Game(johnJohn, randomPlayer);
 
             while (true)
