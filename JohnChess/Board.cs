@@ -86,7 +86,7 @@ namespace JohnChess
             }
         }
 
-        internal void AddPiece(ChessPiece piece)
+        public void AddPiece(ChessPiece piece)
         {
             this[piece.Position] = piece;
             cacheSet = false;

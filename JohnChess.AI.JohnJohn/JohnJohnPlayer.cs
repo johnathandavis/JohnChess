@@ -7,7 +7,7 @@ using JohnChess.Pieces;
 
 namespace JohnChess.AI.JohnJohn
 {
-    public class JohnJohnPlayer : AbstractPlayer<ReinfeldPointsEvaluator>
+    public class JohnJohnPlayer : AbstractPlayer<DevelopingPositionEvaluator>
     {
         private readonly Random rnd;
         
