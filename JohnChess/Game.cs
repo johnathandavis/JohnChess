@@ -26,6 +26,22 @@ namespace JohnChess
         {
             whiteTurn = !whiteTurn;
         }
+        public IPlayer PreviousPlayer
+        {
+            get
+            {
+                if (WhiteTurn) return blackPlayer;
+                else return whitePlayer;
+            }
+        }
+        public IPlayer CurrentPlayer
+        {
+            get
+            {
+                if (WhiteTurn) return whitePlayer;
+                else return blackPlayer;
+            }
+        }
         public List<Move> GetCurrentPlayerMoves()
         {
             PieceColor color = whiteTurn ? PieceColor.White : PieceColor.Black;

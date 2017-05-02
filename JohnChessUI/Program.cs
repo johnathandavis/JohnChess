@@ -37,6 +37,8 @@ namespace JohnChessUI
                 Console.WriteLine();
                 Console.WriteLine("Enter Move (blank for AI):");
                 game.MakePlayerMove();
+                long generatedMoves = ((JohnJohnPlayer)game.PreviousPlayer).Telemetry.GetCounter(Counters.GeneratedMoves);
+                Console.Title = Console.Title + " (Generated Moves: " + generatedMoves + ")";
             }
         }
 

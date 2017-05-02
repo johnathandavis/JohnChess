@@ -13,9 +13,8 @@ namespace JohnChess.AI.JohnJohn
     {
         private const int MAX_TREE_DEPTH = 3;
         private readonly Random rnd;
-        private MoveTreeNode moveTree = null;
         
-        public JohnJohnPlayer() : base(MAX_TREE_DEPTH + 1)
+        public JohnJohnPlayer() : base(MAX_TREE_DEPTH +1)
         {
             rnd = new Random();
         }
@@ -49,7 +48,9 @@ namespace JohnChess.AI.JohnJohn
         {
             if (recurseDepth == 2)
             {
-                return EvaluateBoardFor(moveTree, moveTree.ColorToPlay);
+                double colorToPlay = EvaluateBoardFor(moveTree, moveTree.ColorToPlay);
+                double colorAgainst = EvaluateBoardFor(moveTree, moveTree.ColorToPlay.Opposite());
+                return colorToPlay - colorAgainst;
             }
             else
             {

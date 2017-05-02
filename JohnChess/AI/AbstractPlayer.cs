@@ -12,6 +12,7 @@ namespace JohnChess.AI
     public abstract class AbstractPlayer<T> : IPlayer where T : IPositionEvaluator, new()
     {
         private MoveTreeNode moveTree;
+        private HighSpeedTelemetry telemetry;
         private readonly int maxRecurseDepth;
 
         public AbstractPlayer()
@@ -27,6 +28,8 @@ namespace JohnChess.AI
 
         public Move DecideMove(Board board, PieceColor color)
         {
+            telemetry = new HighSpeedTelemetry();
+
             var now = DateTime.Now;
             if (moveTree == null)
             {
@@ -94,12 +97,40 @@ namespace JohnChess.AI
         {
             if (currentDepth == maxDepth) return;
 
-            var possibleMoves = node.Board.GetPossibleMoves(node.ColorToPlay);
+            List<Move> possibleMoves;
+            try
+            {
+                possibleMoves = node.Board.GetPossibleMoves(node.ColorToPlay);
+            }
+            catch (StalemateException)
+            {
+                node.CounterMoves = new Dictionary<Move, MoveTreeNode>();
+                node.IsStalemate = true;
+                node.Score = 10000;
+                return;
+            }
+            catch (CheckmateException)
+            {
+                node.CounterMoves = new Dictionary<Move, MoveTreeNode>();
+                node.IsCheckmate = true;
+                node.Score = 1000000;
+                return;
+            }
 
             if (node.CounterMoves == null)
             {
                 var counterMoves = new ConcurrentDictionary<Move, MoveTreeNode>();
-                Parallel.ForEach(possibleMoves, (move) =>
+                Action<IEnumerable<Move>, Action<Move>> moveProcessor;
+                if (currentDepth < 99)
+                {
+                    moveProcessor = (moves, action) => Parallel.ForEach(moves, (m) => action(m));
+                }
+                else
+                {
+                    moveProcessor = (moves, action) => { foreach (var m in moves) action(m); };
+                }
+                moveProcessor(possibleMoves, (move) =>
+                //foreach (var move in possibleMoves)
                 {
                     var child = new MoveTreeNode()
                     {
@@ -107,9 +138,11 @@ namespace JohnChess.AI
                         Board = node.Board.PerformMove(move),
                         Move = move
                     };
+                    telemetry.IncrementCounter(Counters.GeneratedMoves);
                     FillNodeWithMoves(child, maxDepth, currentDepth + 1);
                     counterMoves.AddOrUpdate(move, child, (m, c) => child);
-                });
+                    });
+                //}
                 node.CounterMoves = counterMoves.ToDictionary(
                     (kvp) => kvp.Key,
                     (kvp) => kvp.Value);
@@ -120,6 +153,13 @@ namespace JohnChess.AI
                 {
                     FillNodeWithMoves(kvp.Value, maxDepth, currentDepth + 1);
                 }
+            }
+        }
+        public HighSpeedTelemetry Telemetry
+        {
+            get
+            {
+                return telemetry;
             }
         }
     }

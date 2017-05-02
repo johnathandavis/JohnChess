@@ -2,13 +2,10 @@
 using System.Collections.Generic;
 using System.Text;
 
-using JohnChess.Moves;
-
 namespace JohnChess.AI
 {
-    public interface IPlayer
+    public enum Counters
     {
-        Move DecideMove(Board board, PieceColor color);
-
+        GeneratedMoves = 0,
     }
 }
