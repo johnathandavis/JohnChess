@@ -123,7 +123,6 @@ namespace JohnChess
             List<Move> moves = new List<Move>();
             foreach (var p in ls)
             {
-                if (skipKingCheck && p.Type == PieceType.King) continue;
                 moves.AddRange(p.FindMoves(this));
             }
             var finalList = (from m in moves

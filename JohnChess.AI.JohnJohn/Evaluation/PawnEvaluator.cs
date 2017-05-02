@@ -22,8 +22,8 @@ namespace JohnChess.AI.JohnJohn.Evaluation
 
         public double EvaluatePosition(PieceDict myPieces, PieceDict theirPieces)
         {
-            var myPawns = myPieces[PieceType.Pawn].Cast<Pawn>().ToList();
-            var theirPawns = theirPieces[PieceType.Pawn].Cast<Pawn>().ToList();
+            var myPawns = myPieces[PieceType.Pawn].ToList();
+            var theirPawns = theirPieces[PieceType.Pawn].ToList();
 
             double pawnScore = 0.0;
             foreach (var p in myPawns)
@@ -35,7 +35,7 @@ namespace JohnChess.AI.JohnJohn.Evaluation
             return pawnScore;
         }
 
-        private PawnPositionEvaluation EvaluatePawn(Pawn evalPawn, List<Pawn> myPawns, List<Pawn> theirPawns)
+        private PawnPositionEvaluation EvaluatePawn(ChessPiece evalPawn, IEnumerable<ChessPiece> myPawns, IEnumerable<ChessPiece> theirPawns)
         {
             var eval = new PawnPositionEvaluation();
             eval.FileBonusCount = GetPawnFileCount(evalPawn);
@@ -55,23 +55,23 @@ namespace JohnChess.AI.JohnJohn.Evaluation
             return eval;
         }
 
-        internal int GetPawnFileCount(Pawn evalPawn)
+        internal int GetPawnFileCount(ChessPiece evalPawn)
         {
             int pawnFile = (int)evalPawn.Position.File;
             // Add file bonus
-            return (pawnFile <= 4) ? pawnFile : 8 - pawnFile;
+            return (pawnFile <= 4) ? pawnFile : 9 - pawnFile;
         }
 
-        internal int GetPawnRankCount(Pawn evalPawn)
+        internal int GetPawnRankCount(ChessPiece evalPawn)
         {
             int pawnRank = (int)evalPawn.Position.Rank;
             // Add rank bonus
             return (evalPawn.Color == PieceColor.White)
                 ? pawnRank - 1
-                : 7 - pawnRank;
+                : 8 - pawnRank;
         }
 
-        internal int GetPawnProtectionIndex(Pawn evalPawn, List<Pawn> myPawns, List<Pawn> theirPawns)
+        internal int GetPawnProtectionIndex(ChessPiece evalPawn, IEnumerable<ChessPiece> myPawns, IEnumerable<ChessPiece> theirPawns)
         {
             // Check for buddy pawn
             int vertDir = (evalPawn.Color == PieceColor.White) ? 1 : -1;
@@ -80,19 +80,19 @@ namespace JohnChess.AI.JohnJohn.Evaluation
             if ((int)evalPawn.Position.File > 1)
             {
                 buddyPositions.Add(evalPawn.Position
-                    .MoveVert(vertDir)
+                    .MoveVert(vertDir * -1)
                     .MoveHoriz(-1));
                 enemyPositions.Add(evalPawn.Position
-                    .MoveVert(vertDir * -1)
+                    .MoveVert(vertDir)
                     .MoveHoriz(-1));
             }
             if ((int)evalPawn.Position.File < 8)
             {
                 buddyPositions.Add(evalPawn.Position
-                    .MoveVert(vertDir)
+                    .MoveVert(vertDir * -1)
                     .MoveHoriz(1));
                 enemyPositions.Add(evalPawn.Position
-                    .MoveVert(vertDir * -1)
+                    .MoveVert(vertDir)
                     .MoveHoriz(1));
             }
 
@@ -108,7 +108,7 @@ namespace JohnChess.AI.JohnJohn.Evaluation
             return pawnProtectionIndex;
         }
 
-        internal bool IsPawnDoubled(Pawn evalPawn, List<Pawn> myPawns, List<Pawn> theirPawns)
+        internal bool IsPawnDoubled(ChessPiece evalPawn, IEnumerable<ChessPiece> myPawns, IEnumerable<ChessPiece> theirPawns)
         {
             int pawnsInMyFile = 0;
             foreach (var p in myPawns)
@@ -118,7 +118,7 @@ namespace JohnChess.AI.JohnJohn.Evaluation
             return pawnsInMyFile >= 2;
         }
 
-        internal bool IsPawnPassed(Pawn evalPawn, List<Pawn> myPawns, List<Pawn> theirPawns)
+        internal bool IsPawnPassed(ChessPiece evalPawn, IEnumerable<ChessPiece> myPawns, IEnumerable<ChessPiece> theirPawns)
         {
             // Don't even consider a pawn potentially passed unless it is in or past the fifth rank
             if ((evalPawn.Color == PieceColor.White && (int)evalPawn.Position.Rank < 5) ||
@@ -138,7 +138,7 @@ namespace JohnChess.AI.JohnJohn.Evaluation
             foreach (var enemyPawn in theirPawns)
             {
                 if (passedFiles.Contains(enemyPawn.Position.File) &&
-                    isPawnPastRankFunction(enemyPawn.Position.Rank))
+                    !isPawnPastRankFunction(enemyPawn.Position.Rank))
                 {
                     isEnemyPreventingPassedPawn = true;
                     break;

@@ -5,6 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="Evaluation\PawnEvaluator.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\JohnChess\JohnChess.csproj" />
   </ItemGroup>
 
