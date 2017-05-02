@@ -111,7 +111,7 @@ namespace JohnChess
         }
         internal bool DoesMovePutKingInCheck(PieceColor color, Move move)
         {
-            var tempBoard = PreviewMove(move);
+            var tempBoard = PerformMove(move);
             return IsKingInCheck(tempBoard, color);
         }
 
@@ -189,46 +189,39 @@ namespace JohnChess
         }
         public Board PerformMove(Move move)
         {
-            return PerformMove(move, false);
-        }
-        public Board PreviewMove(Move move)
-        {
-            return PerformMove(move, false);
-        }
-        private Board PerformMove(Move move, bool preview)
-        {
             var newBoard = new Board(moveHistory, pieces);
             newBoard.moveHistory.Add(move);
 
             switch (move.Type)
             {
                 case MoveType.NormalPiece:
-                    PerformNormalPieceMove(newBoard, move, preview);
+                    PerformNormalPieceMove(newBoard, move);
                     break;
                 case MoveType.Promotion:
-                    PerformPromotionPieceMove(newBoard, move, preview);
+                    PerformPromotionPieceMove(newBoard, move);
                     break;
                 case MoveType.EnPassant:
-                    PerformEnPassantPieceMove(newBoard, move, preview);
+                    PerformEnPassantPieceMove(newBoard, move);
                     break;
                 case MoveType.Castle:
-                    PerformCastleMove(newBoard, move, preview);
+                    PerformCastleMove(newBoard, move);
                     break;
                 default:
                     throw new AlienChessException("Unknown move type!");
             }
             return newBoard;
         }
-        private void PerformNormalPieceMove(Board newBoard, Move move, bool preview)
+        private void PerformNormalPieceMove(Board newBoard, Move move)
         {
             var normalMove = move.NormalPieceMove;
             newBoard[normalMove.Piece.Position] = null;
 
-            var newPiece = normalMove.Piece.MoveTo(normalMove.NewPosition);
-            if (!preview) newPiece = newPiece.AddMoveToHistory(move);
-            newBoard[normalMove.NewPosition] = normalMove.Piece.MoveTo(normalMove.NewPosition);
+            var newPiece = normalMove.Piece
+                .MoveTo(normalMove.NewPosition)
+                .AddMoveToHistory(move);
+            newBoard[normalMove.NewPosition] = newPiece;
         }
-        private void PerformPromotionPieceMove(Board newBoard, Move move, bool preview)
+        private void PerformPromotionPieceMove(Board newBoard, Move move)
         {
             var promotion = move.Promotion;
             var pieceHistory = new List<Move>(promotion.PromotingPiece.MoveHistory);
@@ -236,23 +229,23 @@ namespace JohnChess
                 .As(promotion.PromotingPiece.Color)
                 .At(promotion.NewPosition)
                 .Create()
-                .AddRangeToMoveHistory(pieceHistory);
-
-            if (!preview) newPiece = newPiece.AddMoveToHistory(move);
+                .AddRangeToMoveHistory(pieceHistory)
+                .AddMoveToHistory(move);
 
             newBoard.AddPiece(newPiece);
             newBoard[promotion.OldPosition] = null;
         }
-        private void PerformEnPassantPieceMove(Board newBoard, Move move, bool preview)
+        private void PerformEnPassantPieceMove(Board newBoard, Move move)
         {
             var enPassant = move.EnPassant;
-            var piece = enPassant.AttackingPawn;
-            if (!preview) piece = (Pawn)piece.AddMoveToHistory(move);
-            newBoard[piece.Position] = null;
+            var newPiece = enPassant.AttackingPawn
+                .AddMoveToHistory(move)
+                .MoveTo(enPassant.DestinationPosition);
+            newBoard[enPassant.AttackingPawn.Position] = null;
             newBoard[enPassant.CapturePosition] = null;
-            newBoard[enPassant.DestinationPosition] = piece.MoveTo(enPassant.DestinationPosition);
+            newBoard[enPassant.DestinationPosition] = newPiece;
         }
-        private void PerformCastleMove(Board newBoard, Move move, bool preview)
+        private void PerformCastleMove(Board newBoard, Move move)
         {
             var castle = move.Castle;
             var king = castle.King;
@@ -261,19 +254,18 @@ namespace JohnChess
             int kingHorizMove = castle.Type == CastleMoveType.KingSide ? 2 : -2;
 
             newBoard[king.Position] = null;
-            king = (King)king.MoveTo(king.Position.MoveHoriz(kingHorizMove));
+            king = (King)king
+                .MoveTo(king.Position.MoveHoriz(kingHorizMove))
+                .AddMoveToHistory(move);
             newBoard[king.Position] = king;
 
             int rookHorizMove = castle.Type == CastleMoveType.KingSide ? -1 : 1;
             newBoard[rook.Position] = null;
-            rook = (Rook)rook.MoveTo(king.Position.MoveHoriz(rookHorizMove));
+            rook = (Rook)rook
+                .MoveTo(king.Position.MoveHoriz(rookHorizMove))
+                .AddMoveToHistory(move);
             newBoard[rook.Position] = rook;
-
-            if (!preview)
-            {
-                newBoard[king.Position] = newBoard[king.Position].AddMoveToHistory(move);
-                newBoard[rook.Position] = newBoard[rook.Position].AddMoveToHistory(move);
-            }
+            
         }
 
         public static bool IsKingInCheck(Board board, PieceColor color)
