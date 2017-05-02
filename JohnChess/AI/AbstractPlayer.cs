@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
+using System.Threading.Tasks;
 
 using JohnChess.Moves;
 using JohnChess.Pieces;
@@ -25,6 +27,7 @@ namespace JohnChess.AI
 
         public Move DecideMove(Board board, PieceColor color)
         {
+            var now = DateTime.Now;
             if (moveTree == null)
             {
                 moveTree = BuildInitialMoveTree(board, color, maxRecurseDepth);
@@ -37,6 +40,9 @@ namespace JohnChess.AI
                 }
                 FillNodeWithMoves(moveTree, maxRecurseDepth, 0);
             }
+            var duration = (DateTime.Now - now).TotalSeconds;
+            Console.Title = "Tree Generation took: " + duration;
+
 
             var selectedMove = SelectMove(board, moveTree, color);
             moveTree = moveTree.CounterMoves[selectedMove];
@@ -92,8 +98,8 @@ namespace JohnChess.AI
 
             if (node.CounterMoves == null)
             {
-                var counterMoves = new Dictionary<Move, MoveTreeNode>();
-                foreach (var move in possibleMoves)
+                var counterMoves = new ConcurrentDictionary<Move, MoveTreeNode>();
+                Parallel.ForEach(possibleMoves, (move) =>
                 {
                     var child = new MoveTreeNode()
                     {
@@ -102,9 +108,11 @@ namespace JohnChess.AI
                         Move = move
                     };
                     FillNodeWithMoves(child, maxDepth, currentDepth + 1);
-                    counterMoves.Add(move, child);
-                }
-                node.CounterMoves = counterMoves;
+                    counterMoves.AddOrUpdate(move, child, (m, c) => child);
+                });
+                node.CounterMoves = counterMoves.ToDictionary(
+                    (kvp) => kvp.Key,
+                    (kvp) => kvp.Value);
             }
             else
             {

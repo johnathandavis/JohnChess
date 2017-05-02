@@ -15,7 +15,7 @@ namespace JohnChess.AI.JohnJohn
         private readonly Random rnd;
         private MoveTreeNode moveTree = null;
         
-        public JohnJohnPlayer()
+        public JohnJohnPlayer() : base(MAX_TREE_DEPTH + 1)
         {
             rnd = new Random();
         }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Text;
 
 namespace JohnChess.Pieces
@@ -31,17 +32,17 @@ namespace JohnChess.Pieces
             switch (pieceType)
             {
                 case PieceType.Bishop:
-                    return new Bishop(color, position, new List<Moves.Move>());
+                    return new Bishop(color, position, ImmutableList<Moves.Move>.Empty);
                 case PieceType.King:
-                    return new King(color, position, new List<Moves.Move>());
+                    return new King(color, position, ImmutableList<Moves.Move>.Empty);
                 case PieceType.Knight:
-                    return new Knight(color, position, new List<Moves.Move>());
+                    return new Knight(color, position, ImmutableList<Moves.Move>.Empty);
                 case PieceType.Pawn:
-                    return new Pawn(color, position, new List<Moves.Move>());
+                    return new Pawn(color, position, ImmutableList<Moves.Move>.Empty);
                 case PieceType.Queen:
-                    return new Queen(color, position, new List<Moves.Move>());
+                    return new Queen(color, position, ImmutableList<Moves.Move>.Empty);
                 case PieceType.Rook:
-                    return new Rook(color, position, new List<Moves.Move>());
+                    return new Rook(color, position, ImmutableList<Moves.Move>.Empty);
                 default:
                     throw new Exception("What alien version of chess are you playing?");
             }

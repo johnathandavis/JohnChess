@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 
 using JohnChess.Moves;
@@ -8,12 +9,16 @@ namespace JohnChess.Pieces
 {
     public class Rook : ChessPiece
     {
-        public Rook(PieceColor color, Position position, List<Moves.Move> moveHistory)
+        public Rook(PieceColor color, Position position, ImmutableList<Move> moveHistory)
             : base(PieceType.Rook, color, position, moveHistory) { }
 
         public override ChessPiece MoveTo(Position position)
         {
-            return new Rook(Color, position, MoveHistory);
+            return new Rook(Color, position, moveHistory);
+        }
+        public override ChessPiece AddMoveToHistory(Move move)
+        {
+            return new Rook(Color, Position, moveHistory.Add(move));
         }
         public override List<Move> FindMoves(Board board)
         {

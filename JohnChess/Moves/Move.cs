@@ -6,7 +6,7 @@ using JohnChess.Pieces;
 
 namespace JohnChess.Moves
 {
-    public class Move
+    public class Move : IEquatable<Move>
     {
         public Move(NormalPieceMove normal)
         {
@@ -72,6 +72,15 @@ namespace JohnChess.Moves
                     throw new AlienChessException();
             }
         }
-        
+        public override int GetHashCode()
+        {
+            return ToString().GetHashCode();
+        }
+
+        public bool Equals(Move other)
+        {
+            if (other is null) return false;
+            return ToString().Equals(other.ToString());
+        }
     }
 }

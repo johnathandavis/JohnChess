@@ -209,7 +209,7 @@ namespace JohnChess.Tests.Pieces
         {
             var pawnD5Board = CreateEnPassantBoardSetup();
             var blackPiece = pawnD5Board.BlackPieces[0];
-            blackPiece.MoveHistory.Clear();
+            blackPiece.ClearHistory();
 
             var whitePawnResponses = pawnD5Board.GetPossibleMoves(PieceColor.White);
             var enPassantMoves = (from m in whitePawnResponses

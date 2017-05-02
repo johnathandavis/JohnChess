@@ -193,7 +193,7 @@ namespace JohnChess
         }
         public Board PreviewMove(Move move)
         {
-            return PerformMove(move, true);
+            return PerformMove(move, false);
         }
         private Board PerformMove(Move move, bool preview)
         {
@@ -222,8 +222,10 @@ namespace JohnChess
         private void PerformNormalPieceMove(Board newBoard, Move move, bool preview)
         {
             var normalMove = move.NormalPieceMove;
-            if (!preview) normalMove.Piece.MoveHistory.Add(move);
             newBoard[normalMove.Piece.Position] = null;
+
+            var newPiece = normalMove.Piece.MoveTo(normalMove.NewPosition);
+            if (!preview) newPiece = newPiece.AddMoveToHistory(move);
             newBoard[normalMove.NewPosition] = normalMove.Piece.MoveTo(normalMove.NewPosition);
         }
         private void PerformPromotionPieceMove(Board newBoard, Move move, bool preview)
@@ -233,9 +235,10 @@ namespace JohnChess
             var newPiece = new PieceBuilder(promotion.NewPieceType.Type)
                 .As(promotion.PromotingPiece.Color)
                 .At(promotion.NewPosition)
-                .Create();
-            newPiece.MoveHistory.AddRange(pieceHistory);
-            if (!preview) newPiece.MoveHistory.Add(move);
+                .Create()
+                .AddRangeToMoveHistory(pieceHistory);
+
+            if (!preview) newPiece = newPiece.AddMoveToHistory(move);
 
             newBoard.AddPiece(newPiece);
             newBoard[promotion.OldPosition] = null;
@@ -243,10 +246,11 @@ namespace JohnChess
         private void PerformEnPassantPieceMove(Board newBoard, Move move, bool preview)
         {
             var enPassant = move.EnPassant;
-            if (!preview) enPassant.AttackingPawn.MoveHistory.Add(move);
-            newBoard[enPassant.AttackingPawn.Position] = null;
+            var piece = enPassant.AttackingPawn;
+            if (!preview) piece = (Pawn)piece.AddMoveToHistory(move);
+            newBoard[piece.Position] = null;
             newBoard[enPassant.CapturePosition] = null;
-            newBoard[enPassant.DestinationPosition] = enPassant.AttackingPawn.MoveTo(enPassant.DestinationPosition);
+            newBoard[enPassant.DestinationPosition] = piece.MoveTo(enPassant.DestinationPosition);
         }
         private void PerformCastleMove(Board newBoard, Move move, bool preview)
         {
@@ -267,8 +271,8 @@ namespace JohnChess
 
             if (!preview)
             {
-                newBoard[king.Position].MoveHistory.Add(move);
-                newBoard[rook.Position].MoveHistory.Add(move);
+                newBoard[king.Position] = newBoard[king.Position].AddMoveToHistory(move);
+                newBoard[rook.Position] = newBoard[rook.Position].AddMoveToHistory(move);
             }
         }
 
