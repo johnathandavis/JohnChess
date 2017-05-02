@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -15,7 +16,8 @@ namespace JohnChess
         private bool cacheSet = false;
         private List<ChessPiece> whitePieceCache;
         private List<ChessPiece> blackPieceCache;
-        
+        private object pieceCacheLocked = new object();
+
         private Board()
         {
             moveHistory = new List<Move>();
@@ -113,23 +115,25 @@ namespace JohnChess
             return IsKingInCheck(tempBoard, color);
         }
 
-        public List<Move> GetPossibleMoves(PieceColor color)
+        internal List<Move> GetPossibleMoves(PieceColor color)
         {
             return GetPossibleMoves(color, false);
         }
         internal List<Move> GetPossibleMoves(PieceColor color, bool skipKingCheck)
         {
+            string key = color.ToString() + skipKingCheck.ToString();
             var ls = (color == PieceColor.Black) ? BlackPieces : WhitePieces;
+
             List<Move> moves = new List<Move>();
             foreach (var p in ls)
             {
                 moves.AddRange(p.FindMoves(this));
             }
-            var finalList = (from m in moves
-                    where IsValidMove(m) && (skipKingCheck || !DoesMovePutKingInCheck(color, m))
-                    select m).ToList();
+            var finalResults = (from m in moves
+                                where IsValidMove(m) && (skipKingCheck || !DoesMovePutKingInCheck(color, m))
+                                select m).ToList();
 
-            if (finalList.Count == 0)
+            if (finalResults.Count == 0)
             {
                 // Okay, we have nowhere to go.
                 // Is this because we are in stalemate (currently not in checK?)
@@ -138,11 +142,12 @@ namespace JohnChess
                 // This is used for unit testing.
                 if (ls.Count == 0) return new List<Move>();
 
-                bool currentlyInCheck = IsKingInCheck(this, PieceColor.White);
+                bool currentlyInCheck = IsKingInCheck(this, color);
                 if (currentlyInCheck) throw new CheckmateException();
                 else throw new StalemateException();
             }
-            return finalList;
+
+            return finalResults;
         }
 
         private bool IsValidMove(Move move)
@@ -157,29 +162,24 @@ namespace JohnChess
         }
         private void LoadPieceCache()
         {
-            whitePieceCache = new List<ChessPiece>();
-            blackPieceCache = new List<ChessPiece>();
-            for (int x = 0; x < pieces.GetLength(0); x++)
+            lock (pieceCacheLocked)
             {
-                for (int y = 0; y < pieces.GetLength(1); y++)
+                whitePieceCache = new List<ChessPiece>();
+                blackPieceCache = new List<ChessPiece>();
+                for (int x = 0; x < pieces.GetLength(0); x++)
                 {
-                    var pieceAt = pieces[x, y];
-                    if (pieceAt == null) continue;
-                    if (pieceAt.Color == PieceColor.White) whitePieceCache.Add(pieceAt);
-                    else blackPieceCache.Add(pieceAt);
+                    for (int y = 0; y < pieces.GetLength(1); y++)
+                    {
+                        var pieceAt = pieces[x, y];
+                        if (pieceAt == null) continue;
+                        if (pieceAt.Color == PieceColor.White) whitePieceCache.Add(pieceAt);
+                        else blackPieceCache.Add(pieceAt);
+                    }
                 }
+                var kings = (from p in whitePieceCache where p.Type == PieceType.King select p).Count();
+                kings = (from p in blackPieceCache where p.Type == PieceType.King select p).Count();
+                cacheSet = true;
             }
-            var kings = (from p in whitePieceCache where p.Type == PieceType.King select p).Count();
-            if (kings == 0)
-            {
-                { }
-            }
-            kings = (from p in blackPieceCache where p.Type == PieceType.King select p).Count();
-            if (kings == 0)
-            {
-                { }
-            }
-            cacheSet = true;
         }
         private bool IsValidNormalMove(NormalPieceMove move)
         {

@@ -6,6 +6,6 @@ namespace JohnChess.AI
 {
     public interface IPositionEvaluator
     {
-        double EvaluatePosition(PieceDict myPieces, PieceDict theirPieces);
+        double EvaluatePosition(MoveTreeNode moveTree, PieceDict myPieces, PieceDict theirPieces, int moveNumber);
     }
 }

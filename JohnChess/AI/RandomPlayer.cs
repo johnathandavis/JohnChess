@@ -15,7 +15,7 @@ namespace JohnChess.AI
             _rnd = new Random();
         }
 
-        public Move SelectMove(Board board, PieceColor color)
+        public Move DecideMove(Board board, PieceColor color)
         {
             var allMoves = board.GetPossibleMoves(color);
             var randomMove = allMoves[_rnd.Next(0, allMoves.Count)];

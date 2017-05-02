@@ -20,7 +20,7 @@ namespace JohnChess.AI.JohnJohn.Evaluation
         private const double PASSED_PAWN_BONUS = 0.25;
         private const double DOUBLE_PAWN_PENALTY = 0.15;
 
-        public double EvaluatePosition(PieceDict myPieces, PieceDict theirPieces)
+        public double EvaluatePosition(MoveTreeNode moveTree, PieceDict myPieces, PieceDict theirPieces, int moveNumber)
         {
             var myPawns = myPieces[PieceType.Pawn].ToList();
             var theirPawns = theirPieces[PieceType.Pawn].ToList();

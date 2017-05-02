@@ -8,6 +8,6 @@ namespace JohnChess.AI
 {
     public interface IPlayer
     {
-        Move SelectMove(Board board, PieceColor color);
+        Move DecideMove(Board board, PieceColor color);
     }
 }

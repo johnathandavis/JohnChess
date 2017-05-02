@@ -1,64 +1,72 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
+using System.Threading.Tasks;
 
 using JohnChess.Moves;
 using JohnChess.Pieces;
 
 namespace JohnChess.AI.JohnJohn
 {
-    public class JohnJohnPlayer : AbstractPlayer<DevelopingPositionEvaluator>
+    public class JohnJohnPlayer : AbstractPlayer<Evaluation.DevelopingPositionEvaluator>
     {
+        private const int MAX_TREE_DEPTH = 3;
         private readonly Random rnd;
+        private MoveTreeNode moveTree = null;
         
         public JohnJohnPlayer()
         {
             rnd = new Random();
         }
 
-        public override Move SelectMove(Board board, PieceColor color)
+        public override Move SelectMove(Board board, MoveTreeNode moveTree, PieceColor color)
         {
-            var allMoves = board.GetPossibleMoves(color);
-            var moveDict = allMoves.ToDictionary(
-                (m) => m,
-                (m) => ScoreMove(board, m, color));
-            var sortedescending = (from kvp in moveDict
-                                   orderby kvp.Value descending
-                                   select kvp).ToList();
-
-            var topValue = sortedescending.First().Value;
-            var candidates = new List<Move>();
-            foreach (var move in sortedescending)
+            var allMoves = moveTree.CounterMoves.Values;
+            foreach (var move in allMoves)
             {
-                if (move.Value == topValue) candidates.Add(move.Key);
+                move.Score = ScoreMove(move, 0);
+            }
+
+            var sortedDescending = (from m in allMoves
+                                    orderby m.Score descending
+                                    select m);
+
+            var topMove = sortedDescending.First();
+            var candidates = new List<Move>();
+            foreach (var move in sortedDescending)
+            {
+                if (move.Score == topMove.Score) candidates.Add(topMove.Move);
                 else break;
             }
 
-            return candidates[rnd.Next(0, candidates.Count)];
+            var finalChoice = candidates[rnd.Next(0, candidates.Count)];
+            moveTree = moveTree.CounterMoves[finalChoice];
+            return finalChoice;
         }
 
-        private double ScoreMove(Board board, Move move, PieceColor color, int recurseDepth = 0)
+        private double ScoreMove(MoveTreeNode moveTree, int recurseDepth)
         {
-            var newBoard = board.PreviewMove(move);
             if (recurseDepth == 2)
             {
-                return EvaluateBoardFor(newBoard, color);
+                return EvaluateBoardFor(moveTree, moveTree.ColorToPlay);
             }
             else
             {
-                int newRecurseDepth = recurseDepth + 1;
-                var responseMoves = board.GetPossibleMoves(color.Opposite());
-                if (responseMoves.Count == 0) return double.MaxValue;
-                var responseDict = responseMoves.AsParallel().ToDictionary(
-                    (m) => m,
-                    (m) => ScoreMove(newBoard, m, color, recurseDepth + 1));
 
-                var movesFromBestToWorst = (from kvp in responseDict
-                                orderby kvp.Value descending
-                                select kvp);
+                Parallel.ForEach(moveTree.CounterMoves, (mkvp) =>
+                {
+                    mkvp.Value.Score = ScoreMove(mkvp.Value, recurseDepth + 1);
+                });
+
+                var movesFromBestToWorst = (from kvp in moveTree.CounterMoves
+                                            orderby kvp.Value.Score descending
+                                            select kvp);
                 var bestMove = (recurseDepth % 2 == 0 ? movesFromBestToWorst.First() : movesFromBestToWorst.Last());
-                return bestMove.Value;
+                return bestMove.Value.Score;
             }
+
         }
+
     }
 }

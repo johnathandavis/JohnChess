@@ -36,7 +36,6 @@ namespace JohnChessUI
                 DrawBoard(game.Board);
                 Console.WriteLine();
                 Console.WriteLine("Enter Move (blank for AI):");
-                string move = Console.ReadLine();
                 game.MakePlayerMove();
             }
         }

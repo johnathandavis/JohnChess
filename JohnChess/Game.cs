@@ -36,11 +36,11 @@ namespace JohnChess
             Move moveToMake;
             if (WhiteTurn)
             {
-                moveToMake = whitePlayer.SelectMove(Board, PieceColor.White);
+                moveToMake = whitePlayer.DecideMove(Board, PieceColor.White);
             }
             else
             {
-                moveToMake = blackPlayer.SelectMove(Board, PieceColor.Black);
+                moveToMake = blackPlayer.DecideMove(Board, PieceColor.Black);
             }
             Board = Board.PerformMove(moveToMake);
             NextTurn();
