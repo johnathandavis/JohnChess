@@ -29,7 +29,7 @@ namespace JohnChess.AI.JohnJohn.Tests.Evaluation
             var pawnEvaluator = new PawnEvaluator();
 
             var whitePawnC7 = CreateBoardWithWhitePawnAt(new Position(File.C, Rank._7));
-            Assert.True(pawnEvaluator.)
+            Assert.True(pawnEvaluator)
         }
     }
 }
