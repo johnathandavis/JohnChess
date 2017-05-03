@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Collections.Concurrent;
+using System.Linq;
+using System.Threading.Tasks;
 
 using JohnChess.Moves;
 using JohnChess.Pieces;
 
-namespace JohnChess.AI
+namespace JohnChess.AI.Enumeration
 {
     public class MoveTreeNode
     {
@@ -14,7 +16,10 @@ namespace JohnChess.AI
         public bool IsCheckmate { get; set; }
         public bool IsStalemate { get; set; }
         public PieceColor ColorToPlay { get; set; }
-        public double Score { get; set; }
+        public double? Score { get; set; }
         public Dictionary<Move, MoveTreeNode> CounterMoves { get; set; }
+
+
+
     }
 }

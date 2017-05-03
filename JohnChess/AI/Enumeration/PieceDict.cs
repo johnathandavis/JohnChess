@@ -5,7 +5,7 @@ using System.Text;
 using JohnChess.Moves;
 using JohnChess.Pieces;
 
-namespace JohnChess.AI
+namespace JohnChess.AI.Enumeration
 {
     public class PieceDict : Dictionary<PieceType, List<ChessPiece>>
     {

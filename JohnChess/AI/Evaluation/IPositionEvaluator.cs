@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace JohnChess.AI
+using JohnChess.AI.Enumeration;
+
+namespace JohnChess.AI.Evaluation
 {
     public interface IPositionEvaluator
     {

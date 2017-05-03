@@ -7,9 +7,12 @@ using System.Threading.Tasks;
 using JohnChess.Moves;
 using JohnChess.Pieces;
 
+using JohnChess.AI.Evaluation;
+using JohnChess.AI.Enumeration;
+
 namespace JohnChess.AI.JohnJohn
 {
-    public class JohnJohnPlayer : AbstractPlayer<Evaluation.DevelopingPositionEvaluator>
+    public class JohnJohnPlayer : AbstractPositionalPlayer<Evaluation.DevelopingPositionEvaluator>
     {
         private const int MAX_TREE_DEPTH = 3;
         private readonly Random rnd;
@@ -64,7 +67,7 @@ namespace JohnChess.AI.JohnJohn
                                             orderby kvp.Value.Score descending
                                             select kvp);
                 var bestMove = (recurseDepth % 2 == 0 ? movesFromBestToWorst.First() : movesFromBestToWorst.Last());
-                return bestMove.Value.Score;
+                return bestMove.Value.Score.Value;
             }
 
         }

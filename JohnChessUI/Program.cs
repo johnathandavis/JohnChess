@@ -7,7 +7,7 @@ using JohnChess.Moves;
 using JohnChess.Pieces;
 using JohnChess.Notation;
 using JohnChess.AI;
-using JohnChess.AI.JohnJohn;
+using JohnChess.AI.SimpleReinfeld;
 
 namespace JohnChessUI
 {
@@ -22,25 +22,37 @@ namespace JohnChessUI
         private const char KNIGHT = 'n';
         private const char QUEEN = 'Q';
         private const char KING = 'K';
+        private static Game game;
         private static IChessMoveFormatter moveFormatter = new LongFormMoveFormatter();
         private static IChessPieceFormatter pieceFormatter = new DefaultPieceFormatter(true);
 
         static void Main(string[] args)
         {
-            var johnJohn = new JohnJohnPlayer();
-            var randomPlayer = new JohnJohnPlayer();
-            var game = new Game(johnJohn, randomPlayer);
+            var johnJohn = new ReinfeldPlayer();
+            var randomPlayer = new ReinfeldPlayer();
+            game = new Game(johnJohn, randomPlayer);
 
+            johnJohn.InitializePlayer(game.Board, PieceColor.White);
+            randomPlayer.InitializePlayer(game.Board, PieceColor.Black);
+
+            Func<Move, string> movePrinter = (move) => moveFormatter.FormatMove(move, pieceFormatter);
+            Func<MoveSnapshot, string> snapshotPrinter = (snapshot) =>
+            {
+                string moveStr = moveFormatter.FormatMove(snapshot.Move, pieceFormatter);
+                return moveStr +  " (" + snapshot.EvaluatedScore + ")";
+            };
+
+            Console.WriteLine("Starting game...");
             while (true)
             {
                 var moves = game.GetCurrentPlayerMoves();
-                DrawMoveList("Move History:", 38, game.Board.MoveHistory);
-                DrawMoveList("Possible moves:", 82, moves);
+                DrawList("Move History:", 38, game.MoveSnapshots, snapshotPrinter);
+                DrawList("Possible moves:", 82, game.GetCurrentPlayerMoves(), movePrinter);
                 DrawBoard(game.Board);
                 Console.WriteLine();
                 Console.WriteLine("Enter Move (blank for AI):");
                 game.MakePlayerMove();
-                long generatedMoves = ((JohnJohnPlayer)game.PreviousPlayer).Telemetry.GetCounter(Counters.GeneratedMoves);
+                long generatedMoves = ((ReinfeldPlayer)game.PreviousPlayer).Telemetry.GetCounter(Counters.GeneratedMoves);
                 Console.Title = Console.Title + " (Generated Moves: " + generatedMoves + ")";
             }
         }
@@ -153,28 +165,28 @@ namespace JohnChessUI
             Console.BackgroundColor = currentBg;
         }
 
-        private static void DrawMoveList(string title, int margin, IReadOnlyList<Move> moves)
+        private static void DrawList<T>(string title, int margin, IReadOnlyList<T> moves, Func<T, string> strGenerator) where T : class
         {
             int colMax = 25;
             Console.CursorLeft = margin;
             Console.CursorTop = 0;
             Console.Write(title);
 
-            List<Move> firstCol = moves.Take(Math.Min(moves.Count, colMax)).ToList();
-            List<Move> secondCol = moves.Count < colMax
-                ? new List<Move>()
+            var firstCol = moves.Take(Math.Min(moves.Count, colMax)).ToList();
+            var secondCol = moves.Count < colMax
+                ? new List<T>()
                 : moves.Skip(colMax).ToList();
 
-            DrawListColumn(firstCol, margin, 1, colMax);
-            DrawListColumn(secondCol, margin + 16, firstCol.Count + 1, colMax);
+            DrawListColumn(firstCol, strGenerator, margin, 1, colMax);
+            DrawListColumn(secondCol, strGenerator, margin + 16, firstCol.Count + 1, colMax);
             Console.CursorLeft = 0;
             Console.CursorTop = 0;
         }
-        private static void DrawListColumn(List<Move> moves, int leftMargin, int startNumber, int colMax)
+        private static void DrawListColumn<T>(List<T> moves, Func<T, string> strGenerator, int leftMargin, int startNumber, int colMax) where T : class
         {
             int rowNumber = 1;
-            var drawMoves = new List<Move>(moves);
-            for (int x = drawMoves.Count; x < colMax; x++) drawMoves.Add(null);
+            var drawMoves = new List<T>(moves);
+            for (int x = drawMoves.Count; x < colMax; x++) drawMoves.Add(default(T));
             foreach (var move in drawMoves)
             {
                 Console.CursorLeft = leftMargin;
@@ -188,7 +200,8 @@ namespace JohnChessUI
                 }
                 else
                 {
-                    string moveStr = moveFormatter.FormatMove(move, pieceFormatter);
+                    string moveStr = strGenerator(move);
+
                     Console.Write(startNumber.ToString() + ":  " + moveStr + "          ");
                 }
                 startNumber++;

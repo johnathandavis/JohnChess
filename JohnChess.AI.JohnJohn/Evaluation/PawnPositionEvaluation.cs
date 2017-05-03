@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
+using JohnChess.AI.Evaluation;
+using JohnChess.AI.Enumeration;
+
 namespace JohnChess.AI.JohnJohn.Evaluation
 {
     public class PawnPositionEvaluation

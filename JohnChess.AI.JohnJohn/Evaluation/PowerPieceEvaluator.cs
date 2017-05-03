@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 
 using JohnChess.Pieces;
+using JohnChess.AI.Evaluation;
+using JohnChess.AI.Enumeration;
 
 namespace JohnChess.AI.JohnJohn.Evaluation
 {

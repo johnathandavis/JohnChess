@@ -10,15 +10,17 @@ namespace JohnChess
 {
     public class Game
     {
-        private readonly IPlayer whitePlayer;
-        private readonly IPlayer blackPlayer;
+        private readonly AbstractPlayer whitePlayer;
+        private readonly AbstractPlayer blackPlayer;
         private readonly Random rnd = new Random();
+        private readonly List<MoveSnapshot> moveSnapshots;
         private bool whiteTurn = true;
 
-        public Game(IPlayer whitePlayer, IPlayer blackPlayer)
+        public Game(AbstractPlayer whitePlayer, AbstractPlayer blackPlayer)
         {
             this.whitePlayer = whitePlayer;
             this.blackPlayer = blackPlayer;
+            this.moveSnapshots = new List<MoveSnapshot>();
             Board = Board.NewStandardBoard();
         }
 
@@ -26,7 +28,7 @@ namespace JohnChess
         {
             whiteTurn = !whiteTurn;
         }
-        public IPlayer PreviousPlayer
+        public AbstractPlayer PreviousPlayer
         {
             get
             {
@@ -34,7 +36,7 @@ namespace JohnChess
                 else return whitePlayer;
             }
         }
-        public IPlayer CurrentPlayer
+        public AbstractPlayer CurrentPlayer
         {
             get
             {
@@ -42,10 +44,11 @@ namespace JohnChess
                 else return blackPlayer;
             }
         }
-        public List<Move> GetCurrentPlayerMoves()
+        public AbstractPlayer WhitePlayer => whitePlayer;
+        public AbstractPlayer BlackPlayer => blackPlayer;
+        public IReadOnlyList<Move> GetCurrentPlayerMoves()
         {
-            PieceColor color = whiteTurn ? PieceColor.White : PieceColor.Black;
-            return Board.GetPossibleMoves(color);
+            return CurrentPlayer.PossibleMoves;
         }
         public void MakePlayerMove()
         {
@@ -58,6 +61,14 @@ namespace JohnChess
             {
                 moveToMake = blackPlayer.DecideMove(Board, PieceColor.Black);
             }
+            var moveSnapshot = new MoveSnapshot()
+            {
+                Color = WhiteTurn ? PieceColor.White : PieceColor.Black,
+                EvaluatedScore = CurrentPlayer.CurrentScore,
+                Move = moveToMake,
+                Moves = new List<Move>(CurrentPlayer.PossibleMoves)
+            };
+            moveSnapshots.Add(moveSnapshot);
             Board = Board.PerformMove(moveToMake);
             NextTurn();
         }
@@ -70,5 +81,6 @@ namespace JohnChess
                 return whiteTurn;
             }
         }
+        public IReadOnlyList<MoveSnapshot> MoveSnapshots => moveSnapshots;
     }
 }

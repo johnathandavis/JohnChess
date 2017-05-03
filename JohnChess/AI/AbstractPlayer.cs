@@ -6,10 +6,12 @@ using System.Threading.Tasks;
 
 using JohnChess.Moves;
 using JohnChess.Pieces;
+using JohnChess.AI.Evaluation;
+using JohnChess.AI.Enumeration;
 
 namespace JohnChess.AI
 {
-    public abstract class AbstractPlayer<T> : IPlayer where T : IPositionEvaluator, new()
+    public abstract class AbstractPlayer
     {
         private MoveTreeNode moveTree;
         private HighSpeedTelemetry telemetry;
@@ -17,32 +19,30 @@ namespace JohnChess.AI
 
         public AbstractPlayer()
         {
-            PositionEvaluator = new T();
+            telemetry = new HighSpeedTelemetry();
             maxRecurseDepth = 3;
         }
         public AbstractPlayer(int maxRecurseDepth)
         {
-            PositionEvaluator = new T();
+            telemetry = new HighSpeedTelemetry();
             this.maxRecurseDepth = maxRecurseDepth;
         }
 
+        public void InitializePlayer(Board board, PieceColor color)
+        {
+            if (moveTree == null)
+            {
+                moveTree = BuildInitialMoveTree(board, color);
+            }
+        }
         public Move DecideMove(Board board, PieceColor color)
         {
             telemetry = new HighSpeedTelemetry();
 
             var now = DateTime.Now;
-            if (moveTree == null)
-            {
-                moveTree = BuildInitialMoveTree(board, color, maxRecurseDepth);
-            }
-            else
-            {
-                if (board.MoveHistory.Count > 0)
-                {
-                    moveTree = moveTree.CounterMoves[board.MoveHistory.Last()];
-                }
-                FillNodeWithMoves(moveTree, maxRecurseDepth, 0);
-            }
+
+            ExpandMoveTree(board, color);
+
             var duration = (DateTime.Now - now).TotalSeconds;
             Console.Title = "Tree Generation took: " + duration;
 
@@ -54,42 +54,27 @@ namespace JohnChess.AI
 
         public abstract Move SelectMove(Board board, MoveTreeNode moveTree, PieceColor color);
 
-        private IPositionEvaluator PositionEvaluator { get; }
-        protected double EvaluateBoardFor(MoveTreeNode currentMoveTree, PieceColor color)
-        {
-            var board = currentMoveTree.Board;
-            var myPieces = color == PieceColor.White ? board.WhitePieces : board.BlackPieces;
-            var theirPieces = color == PieceColor.Black ? board.WhitePieces : board.BlackPieces;
 
-            var myPieceDict = ConvertPieceListToDict(board, myPieces);
-            var theirPieceDict = ConvertPieceListToDict(board, myPieces);
-
-            double myScore = PositionEvaluator.EvaluatePosition(currentMoveTree, myPieceDict, theirPieceDict, board.MoveHistory.Count);
-            return myScore;
-        }
-        private PieceDict ConvertPieceListToDict(Board board, IEnumerable<ChessPiece> pieces)
+        private void ExpandMoveTree(Board board, PieceColor color)
         {
-            var pieceDict = new PieceDict();
-            foreach (var piece in pieces)
+            if (board.MoveHistory.Count > 0)
             {
-                if (!pieceDict.ContainsKey(piece.Type))
+                var lastMove = board.MoveHistory.Last();
+                if (moveTree.CounterMoves.ContainsKey(lastMove))
                 {
-                    pieceDict.Add(piece.Type, new List<ChessPiece>());
+                    moveTree = moveTree.CounterMoves[lastMove];
                 }
-                pieceDict[piece.Type].Add(piece);
             }
-            return pieceDict;
+            FillNodeWithMoves(moveTree, MaximumRecurseDepth, 0);
         }
-
-
-        private MoveTreeNode BuildInitialMoveTree(Board board, PieceColor color, int maxDepth)
+        private MoveTreeNode BuildInitialMoveTree(Board board, PieceColor color)
         {
             var node = new MoveTreeNode();
             node.Move = null;
+            node.Score = 0.0;
             node.Board = board;
             node.ColorToPlay = color;
-
-            FillNodeWithMoves(node, maxDepth, 0);
+            FillNodeWithMoves(node, MaximumRecurseDepth, MaximumRecurseDepth-1);
             return node;
         }
 
@@ -130,7 +115,6 @@ namespace JohnChess.AI
                     moveProcessor = (moves, action) => { foreach (var m in moves) action(m); };
                 }
                 moveProcessor(possibleMoves, (move) =>
-                //foreach (var move in possibleMoves)
                 {
                     var child = new MoveTreeNode()
                     {
@@ -141,8 +125,7 @@ namespace JohnChess.AI
                     telemetry.IncrementCounter(Counters.GeneratedMoves);
                     FillNodeWithMoves(child, maxDepth, currentDepth + 1);
                     counterMoves.AddOrUpdate(move, child, (m, c) => child);
-                    });
-                //}
+                });
                 node.CounterMoves = counterMoves.ToDictionary(
                     (kvp) => kvp.Key,
                     (kvp) => kvp.Value);
@@ -155,11 +138,34 @@ namespace JohnChess.AI
                 }
             }
         }
+
         public HighSpeedTelemetry Telemetry
         {
             get
             {
                 return telemetry;
+            }
+        }
+        public double CurrentScore
+        {
+            get
+            {
+                return moveTree.Score.Value;
+            }
+        }
+        public IReadOnlyList<Move> PossibleMoves
+        {
+            get
+            {
+                return (from m in moveTree.CounterMoves.Values
+                        select m.Move).ToList();
+            }
+        }
+        protected int MaximumRecurseDepth
+        {
+            get
+            {
+                return maxRecurseDepth;
             }
         }
     }

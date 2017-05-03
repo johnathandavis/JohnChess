@@ -1,13 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp1.1</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\JohnChess.AI.JohnJohn\JohnChess.AI.JohnJohn.csproj" />
-    <ProjectReference Include="..\JohnChess.AI.SimpleReinfeld\JohnChess.AI.SimpleReinfeld.csproj" />
     <ProjectReference Include="..\JohnChess\JohnChess.csproj" />
   </ItemGroup>
 
