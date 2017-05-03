@@ -49,5 +49,16 @@ namespace JohnChess
             return (r >= 1 && r <= 8) &&
                 (f >= 1 && f <= 8);
         }
+
+
+        public static Position Parse(string text)
+        {
+            string fileStr = text[0].ToString().ToUpper();
+            int rankInt = int.Parse(text[1].ToString());
+
+            File f = (File)Enum.Parse(typeof(File), fileStr);
+            Rank r = (Rank)rankInt;
+            return new Position(f, r);
+        }
     }
 }

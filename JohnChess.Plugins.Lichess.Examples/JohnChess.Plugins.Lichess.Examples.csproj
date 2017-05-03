@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\JohnChess.LichessPuzzles\JohnChess.LichessPuzzles.csproj" />
+    <ProjectReference Include="..\JohnChess.Plugins.Lichess\JohnChess.Plugins.Lichess.csproj" />
   </ItemGroup>
 
 </Project>

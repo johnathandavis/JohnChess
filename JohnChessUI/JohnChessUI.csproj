@@ -8,6 +8,7 @@
   <ItemGroup>
     <ProjectReference Include="..\JohnChess.AI.JohnJohn\JohnChess.AI.JohnJohn.csproj" />
     <ProjectReference Include="..\JohnChess.AI.SimpleReinfeld\JohnChess.AI.SimpleReinfeld.csproj" />
+    <ProjectReference Include="..\JohnChess.Plugins.Lichess\JohnChess.Plugins.Lichess.csproj" />
     <ProjectReference Include="..\JohnChess\JohnChess.csproj" />
   </ItemGroup>
 

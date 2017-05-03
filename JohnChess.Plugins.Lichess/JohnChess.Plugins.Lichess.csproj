@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\JohnChess.Plugins.UCI\JohnChess.Plugins.UCI.csproj" />
     <ProjectReference Include="..\JohnChess\JohnChess.csproj" />
   </ItemGroup>
 

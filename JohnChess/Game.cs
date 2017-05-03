@@ -23,6 +23,13 @@ namespace JohnChess
             this.moveSnapshots = new List<MoveSnapshot>();
             Board = Board.NewStandardBoard();
         }
+        public Game(AbstractPlayer whitePlayer, AbstractPlayer blackPlayer, Board startingBoard)
+        {
+            this.whitePlayer = whitePlayer;
+            this.blackPlayer = blackPlayer;
+            this.moveSnapshots = new List<MoveSnapshot>();
+            Board = startingBoard;
+        }
 
         public void NextTurn()
         {

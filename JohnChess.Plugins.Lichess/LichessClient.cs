@@ -12,9 +12,9 @@ using HtmlAgilityPack;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace JohnChess.LichessPuzzles
+namespace JohnChess.Plugins.Lichess
 {
-    public class LichessPuzzleClient
+    public class LichessClient
     {
         private readonly JsJsonParser jsJsonParser = new JsJsonParser();
         private readonly Regex LichessPuzzleRegex = new Regex("lichess\\.puzzle[\\s]?\\=[\\s]?");
@@ -22,7 +22,7 @@ namespace JohnChess.LichessPuzzles
 
 
 
-        public async Task<dynamic> GetJsonForPuzzleAsync(int puzzleNumber)
+        public async Task<LichessGame> GetTrainingPuzzleAsync(int puzzleNumber)
         {
             string url = string.Format(PUZZLE_BASE, puzzleNumber.ToString());
             string html = await GetHtmlContentAsync(url);
@@ -36,7 +36,7 @@ namespace JohnChess.LichessPuzzles
             string javaScriptCode = validScripts.First();
             string puzzleVal = jsJsonParser.GetJsonFromJsScriptVariable(javaScriptCode, "lichess");
             dynamic json = JObject.Parse(puzzleVal);
-            return json;
+            return LichessGame.FromDynamicPuzzleJson(json);
         }
         private async Task<string> GetHtmlContentAsync(string url)
         {

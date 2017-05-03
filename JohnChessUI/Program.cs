@@ -8,6 +8,7 @@ using JohnChess.Pieces;
 using JohnChess.Notation;
 using JohnChess.AI;
 using JohnChess.AI.SimpleReinfeld;
+using JohnChess.Plugins.Lichess;
 
 namespace JohnChessUI
 {
@@ -30,7 +31,12 @@ namespace JohnChessUI
         {
             var johnJohn = new ReinfeldPlayer();
             var randomPlayer = new ReinfeldPlayer();
-            game = new Game(johnJohn, randomPlayer);
+
+            var lichessClient = new LichessClient();
+            var lichessGame = lichessClient.GetTrainingPuzzleAsync(1).Result;
+            var johnChessBoard = LichessGameJohnChessConverter.ToJohnChessGame(lichessGame);
+
+            game = new Game(johnJohn, randomPlayer, johnChessBoard);
 
             johnJohn.InitializePlayer(game.Board, PieceColor.White);
             randomPlayer.InitializePlayer(game.Board, PieceColor.Black);

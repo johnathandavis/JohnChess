@@ -4,7 +4,7 @@ using System.Text;
 
 using Jint;
 
-namespace JohnChess.LichessPuzzles
+namespace JohnChess.Plugins.Lichess
 {
     public class JsJsonParser
     {
