@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using JohnChess;
 using JohnChess.Moves;
 using JohnChess.Pieces;
+using JohnChess.Notation;
 using JohnChess.AI;
 using JohnChess.AI.JohnJohn;
 
@@ -21,6 +22,8 @@ namespace JohnChessUI
         private const char KNIGHT = 'n';
         private const char QUEEN = 'Q';
         private const char KING = 'K';
+        private static IChessMoveFormatter moveFormatter = new LongFormMoveFormatter();
+        private static IChessPieceFormatter pieceFormatter = new DefaultPieceFormatter(true);
 
         static void Main(string[] args)
         {
@@ -185,7 +188,8 @@ namespace JohnChessUI
                 }
                 else
                 {
-                    Console.Write(startNumber.ToString() + ":  " + move + "          ");
+                    string moveStr = moveFormatter.FormatMove(move, pieceFormatter);
+                    Console.Write(startNumber.ToString() + ":  " + moveStr + "          ");
                 }
                 startNumber++;
                 rowNumber++;

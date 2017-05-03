@@ -33,7 +33,7 @@ namespace JohnChess
         {
             // Should be something like:
             // F5 (File first, then Rank)
-            return File.ToString() + ((int)Rank).ToString();
+            return File.ToString().ToLower() + ((int)Rank).ToString();
         }
 
         public static bool IsOnBoard(Position position)

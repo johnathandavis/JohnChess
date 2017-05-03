@@ -6,7 +6,7 @@ namespace JohnChess.Notation
 {
     public class DefaultPieceFormatter : SimpleStringPieceFormatter, IChessPieceFormatter
     {
-        private readonly bool uppercase = false;
+        private readonly bool uppercase = true;
 
         public DefaultPieceFormatter() { }
         public DefaultPieceFormatter(bool uppercase)

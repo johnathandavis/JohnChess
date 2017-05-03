@@ -5,6 +5,7 @@ using System.Linq;
 
 using JohnChess.Moves;
 using JohnChess.Pieces;
+using JohnChess.Notation;
 
 namespace JohnChess
 {
