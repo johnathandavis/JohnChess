@@ -14,7 +14,6 @@ namespace JohnChess
         private readonly AbstractPlayer blackPlayer;
         private readonly Random rnd = new Random();
         private readonly List<MoveSnapshot> moveSnapshots;
-        private bool whiteTurn = true;
 
         public Game(AbstractPlayer whitePlayer, AbstractPlayer blackPlayer)
         {
@@ -30,16 +29,12 @@ namespace JohnChess
             this.moveSnapshots = new List<MoveSnapshot>();
             Board = startingBoard;
         }
-
-        public void NextTurn()
-        {
-            whiteTurn = !whiteTurn;
-        }
+        
         public AbstractPlayer PreviousPlayer
         {
             get
             {
-                if (WhiteTurn) return blackPlayer;
+                if (ColorToPlay == PieceColor.White) return blackPlayer;
                 else return whitePlayer;
             }
         }
@@ -47,7 +42,7 @@ namespace JohnChess
         {
             get
             {
-                if (WhiteTurn) return whitePlayer;
+                if (ColorToPlay == PieceColor.White) return whitePlayer;
                 else return blackPlayer;
             }
         }
@@ -60,7 +55,7 @@ namespace JohnChess
         public void MakePlayerMove()
         {
             Move moveToMake;
-            if (WhiteTurn)
+            if (ColorToPlay == PieceColor.White)
             {
                 moveToMake = whitePlayer.DecideMove(Board, PieceColor.White);
             }
@@ -70,22 +65,23 @@ namespace JohnChess
             }
             var moveSnapshot = new MoveSnapshot()
             {
-                Color = WhiteTurn ? PieceColor.White : PieceColor.Black,
+                Color = ColorToPlay,
                 EvaluatedScore = CurrentPlayer.CurrentScore,
                 Move = moveToMake,
                 Moves = new List<Move>(CurrentPlayer.PossibleMoves)
             };
             moveSnapshots.Add(moveSnapshot);
             Board = Board.PerformMove(moveToMake);
-            NextTurn();
         }
 
         public Board Board { get; private set; }
-        public bool WhiteTurn
+        public PieceColor ColorToPlay
         {
             get
             {
-                return whiteTurn;
+                return Board.MoveHistory.Count % 2 == 0
+                    ? PieceColor.White
+                    : PieceColor.Black;
             }
         }
         public IReadOnlyList<MoveSnapshot> MoveSnapshots => moveSnapshots;

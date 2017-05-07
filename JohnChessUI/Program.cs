@@ -33,13 +33,13 @@ namespace JohnChessUI
             var randomPlayer = new ReinfeldPlayer();
 
             var lichessClient = new LichessClient();
-            var lichessGame = lichessClient.GetTrainingPuzzleAsync(1).Result;
+            var lichessGame = lichessClient.GetTrainingPuzzleAsync(2).Result;
             var johnChessBoard = LichessGameJohnChessConverter.ToJohnChessGame(lichessGame);
 
             game = new Game(johnJohn, randomPlayer, johnChessBoard);
 
-            johnJohn.InitializePlayer(game.Board, PieceColor.White);
-            randomPlayer.InitializePlayer(game.Board, PieceColor.White);
+            johnJohn.InitializePlayer(game.Board, game.ColorToPlay);
+            randomPlayer.InitializePlayer(game.Board, game.ColorToPlay);
 
             Func<Move, string> movePrinter = (move) => moveFormatter.FormatMove(move, pieceFormatter);
             Func<MoveSnapshot, string> snapshotPrinter = (snapshot) =>

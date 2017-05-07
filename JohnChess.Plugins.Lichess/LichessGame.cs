@@ -7,6 +7,7 @@ namespace JohnChess.Plugins.Lichess
 {
     public class LichessGame
     {
+        public int StartingPly { get; set; }
         public string Clock { get; set; }
         public List<UCIChessMove> UCIMoves { get; set; } = new List<UCIChessMove>();
 
@@ -17,6 +18,7 @@ namespace JohnChess.Plugins.Lichess
 
             var lichess = new LichessGame();
             lichess.Clock = game.clock.ToString();
+            lichess.StartingPly = (int)json.puzzle.data.puzzle.initialPly;
             foreach (var p in parts)
             {
                 if (p.uci != null)
@@ -24,6 +26,7 @@ namespace JohnChess.Plugins.Lichess
                     string uci = p.uci.ToString();
                     lichess.UCIMoves.Add(new UCIChessMove(uci));
                 }
+                if (lichess.UCIMoves.Count >= lichess.StartingPly) break;
             }
             return lichess;
         }
