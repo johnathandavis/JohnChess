@@ -39,7 +39,7 @@ namespace JohnChessUI
             game = new Game(johnJohn, randomPlayer, johnChessBoard);
 
             johnJohn.InitializePlayer(game.Board, PieceColor.White);
-            randomPlayer.InitializePlayer(game.Board, PieceColor.Black);
+            randomPlayer.InitializePlayer(game.Board, PieceColor.White);
 
             Func<Move, string> movePrinter = (move) => moveFormatter.FormatMove(move, pieceFormatter);
             Func<MoveSnapshot, string> snapshotPrinter = (snapshot) =>
@@ -51,15 +51,24 @@ namespace JohnChessUI
             Console.WriteLine("Starting game...");
             while (true)
             {
-                var moves = game.GetCurrentPlayerMoves();
-                DrawList("Move History:", 38, game.MoveSnapshots, snapshotPrinter);
-                DrawList("Possible moves:", 82, game.GetCurrentPlayerMoves(), movePrinter);
-                DrawBoard(game.Board);
-                Console.WriteLine();
-                Console.WriteLine("Enter Move (blank for AI):");
-                game.MakePlayerMove();
-                long generatedMoves = ((ReinfeldPlayer)game.PreviousPlayer).Telemetry.GetCounter(Counters.GeneratedMoves);
-                Console.Title = Console.Title + " (Generated Moves: " + generatedMoves + ")";
+                try
+                {
+                    var moves = game.GetCurrentPlayerMoves();
+                    DrawList("Move History:", 38, game.MoveSnapshots, snapshotPrinter);
+                    DrawList("Possible moves:", 82, game.GetCurrentPlayerMoves(), movePrinter);
+                    DrawBoard(game.Board);
+                    Console.WriteLine();
+                    Console.WriteLine("Enter Move (blank for AI):");
+                    game.MakePlayerMove();
+                    long generatedMoves = ((ReinfeldPlayer)game.PreviousPlayer).Telemetry.GetCounter(Counters.GeneratedMoves);
+                    Console.Title = Console.Title + " (Generated Moves: " + generatedMoves + ")";
+                }
+                catch (CheckmateException)
+                {
+                    bool blackWon = game.BlackPlayer == game.PreviousPlayer;
+                    Console.WriteLine(blackWon ? "Black Wins!" : "White wins!");
+                    Console.ReadKey();
+                }
             }
         }
 

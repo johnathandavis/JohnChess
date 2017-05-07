@@ -11,6 +11,8 @@ namespace JohnChess.AI.Enumeration
 {
     public class MoveTreeNode
     {
+        public const int CHECKMATE_SCORE = int.MaxValue;
+
         public Move Move { get; set; }
         public Board Board { get; set; }
         public bool IsCheckmate { get; set; }

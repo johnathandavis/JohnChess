@@ -28,10 +28,19 @@ namespace JohnChess.AI.SimpleReinfeld
             {
                 foreach (var tree in moveTree.CounterMoves)
                 {
+                    var move = tree.Value.Move;
+                    if (tree.Value.Score == MoveTreeNode.CHECKMATE_SCORE)
+                    {
+                        return tree.Value.Move;
+                    }
                     if (tree.Value.Score == null)
                     {
                         ChooseBestMove(tree.Value, color, recurseDepth + 1);
                     }
+                }
+                if (moveTree.CounterMoves.Count == 0)
+                {
+                    throw new CheckmateException();
                 }
                 var sortedMoves = (from m in moveTree.CounterMoves
                                    orderby m.Value.Score descending

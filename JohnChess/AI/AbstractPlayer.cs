@@ -80,6 +80,7 @@ namespace JohnChess.AI
 
         private void FillNodeWithMoves(MoveTreeNode node, int maxDepth, int currentDepth)
         {
+
             if (currentDepth == maxDepth) return;
 
             List<Move> possibleMoves;
@@ -98,7 +99,7 @@ namespace JohnChess.AI
             {
                 node.CounterMoves = new Dictionary<Move, MoveTreeNode>();
                 node.IsCheckmate = true;
-                node.Score = 1000000;
+                node.Score = MoveTreeNode.CHECKMATE_SCORE;
                 return;
             }
 
