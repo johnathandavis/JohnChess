@@ -51,10 +51,6 @@ namespace JohnChess
             }
             private set
             {
-                if (pieces[p.RowX, p.ColY]?.Type == PieceType.King && value != null)
-                {
-                    { };
-                }
                 pieces[p.RowX, p.ColY] = value;
                 cacheSet = false;
             }
@@ -173,12 +169,11 @@ namespace JohnChess
                     {
                         var pieceAt = pieces[x, y];
                         if (pieceAt == null) continue;
-                        if (pieceAt.Color == PieceColor.White) whitePieceCache.Add(pieceAt);
+                        if (pieceAt.Color == PieceColor.White)
+                            whitePieceCache.Add(pieceAt);
                         else blackPieceCache.Add(pieceAt);
                     }
                 }
-                var kings = (from p in whitePieceCache where p.Type == PieceType.King select p).Count();
-                kings = (from p in blackPieceCache where p.Type == PieceType.King select p).Count();
                 cacheSet = true;
             }
         }
@@ -197,6 +192,8 @@ namespace JohnChess
             {
                 case MoveType.NormalPiece:
                     PerformNormalPieceMove(newBoard, move);
+                    var cacheEnabled = newBoard.cacheSet;
+                    var whitePieces = newBoard.WhitePieces;
                     break;
                 case MoveType.Promotion:
                     PerformPromotionPieceMove(newBoard, move);
@@ -217,10 +214,16 @@ namespace JohnChess
             var normalMove = move.NormalPieceMove;
             newBoard[normalMove.Piece.Position] = null;
 
+
             var newPiece = normalMove.Piece
                 .MoveTo(normalMove.NewPosition)
                 .AddMoveToHistory(move);
             newBoard[normalMove.NewPosition] = newPiece;
+
+            var oldPosPiece = newBoard[normalMove.Piece.Position];
+            var newPosPiece = newBoard[normalMove.NewPosition];
+            newBoard.LoadPieceCache();
+            var whitePieces = newBoard.WhitePieces;
         }
         private void PerformPromotionPieceMove(Board newBoard, Move move)
         {

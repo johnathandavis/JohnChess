@@ -13,6 +13,7 @@ namespace JohnChess.AI
 {
     public abstract class AbstractPlayer
     {
+        private const bool PARALLEL_PROCESSING = false;
         private MoveTreeNode moveTree;
         private HighSpeedTelemetry telemetry;
         private readonly int maxRecurseDepth;
@@ -107,7 +108,7 @@ namespace JohnChess.AI
             {
                 var counterMoves = new ConcurrentDictionary<Move, MoveTreeNode>();
                 Action<IEnumerable<Move>, Action<Move>> moveProcessor;
-                if (currentDepth < 99)
+                if (PARALLEL_PROCESSING)
                 {
                     moveProcessor = (moves, action) => Parallel.ForEach(moves, (m) => action(m));
                 }
@@ -117,6 +118,10 @@ namespace JohnChess.AI
                 }
                 moveProcessor(possibleMoves, (move) =>
                 {
+                    if (move.ToString() == "be8 h5" && moveTree.Board.MoveHistory.Count == 71)
+                    {
+                        Console.WriteLine(moveTree.Board.MoveHistory.Count);
+                    }
                     var child = new MoveTreeNode()
                     {
                         ColorToPlay = node.ColorToPlay.Opposite(),

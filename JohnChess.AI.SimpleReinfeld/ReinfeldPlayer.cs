@@ -26,9 +26,14 @@ namespace JohnChess.AI.SimpleReinfeld
             }
             else
             {
+                double scoreRightNow = EvaluateBoardFor(moveTree, color);
                 foreach (var tree in moveTree.CounterMoves)
                 {
                     var move = tree.Value.Move;
+                    if (move.ToString() == "be8 h5")
+                    {
+
+                    }
                     if (tree.Value.Score == MoveTreeNode.CHECKMATE_SCORE)
                     {
                         return tree.Value.Move;
